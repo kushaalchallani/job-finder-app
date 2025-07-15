@@ -1,0 +1,100 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../../core/utils/shared_prefs.dart';
+
+class SplashPage extends StatefulWidget {
+  const SplashPage({super.key});
+
+  @override
+  State<SplashPage> createState() => _SplashPageState();
+}
+
+class _SplashPageState extends State<SplashPage> {
+  bool _isFirstLaunch = false;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _handleCheck();
+  }
+
+  Future<void> _handleCheck() async {
+    final isFirst = !SharedPrefs.hasOpenedBefore;
+    final user = Supabase.instance.client.auth.currentUser;
+
+    if (isFirst) {
+      setState(() {
+        _isFirstLaunch = true;
+        _isLoading = false;
+      });
+    } else {
+      await Future.delayed(const Duration(seconds: 2));
+      if (user != null) {
+        context.go('/home');
+      } else {
+        context.go('/signin');
+      }
+    }
+  }
+
+  void _onGetStarted() async {
+    await SharedPrefs.setOpened();
+    context.go('/signin');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const SizedBox(),
+              Center(child: Image.asset('assets/images/logo.png', height: 600)),
+              Column(
+                children: [
+                  if (_isFirstLaunch)
+                    ElevatedButton(
+                      onPressed: _onGetStarted,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        minimumSize: const Size.fromHeight(50),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        "Get Started",
+                        style: TextStyle(fontSize: 16, color: Colors.white),
+                      ),
+                    )
+                  else if (_isLoading)
+                    const CircularProgressIndicator(
+                      color: Colors.blue,
+                      strokeWidth: 2,
+                    ),
+
+                  const SizedBox(height: 20),
+
+                  const Text(
+                    "Powered by Job Finder",
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
