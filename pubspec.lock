@@ -103,7 +103,7 @@ packages:
     source: hosted
     version: "5.0.0"
   flutter_riverpod:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: flutter_riverpod
       sha256: "9532ee6db4a943a1ed8383072a2e3eeda041db5657cdf6d2acecf3c21ecbe7e1"
@@ -128,6 +128,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.4.3"
+  go_router:
+    dependency: "direct main"
+    description:
+      name: go_router
+      sha256: c489908a54ce2131f1d1b7cc631af9c1a06fac5ca7c449e959192089f9489431
+      url: "https://pub.dev"
+    source: hosted
+    version: "16.0.0"
   gotrue:
     dependency: transitive
     description:
@@ -353,7 +361,7 @@ packages:
     source: hosted
     version: "0.27.7"
   shared_preferences:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: shared_preferences
       sha256: "6e8bf70b7fef813df4e9a36f658ac46d107db4b4cfe1048b477d4e453a8159f5"
@@ -470,7 +478,7 @@ packages:
     source: hosted
     version: "2.8.0"
   supabase_flutter:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: supabase_flutter
       sha256: "66b8d0a7a31f45955b11ad7b65347abc61b31e10f8bdfa4428501b81f5b30fa5"
