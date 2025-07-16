@@ -172,8 +172,8 @@ class _SignUpPageState extends State<SignUpPage> {
               children: [
                 const Text("Already have an account? "),
                 TextButton(
-                  onPressed: () => context.go('/signin'),
-                  child: const Text("Sign In"),
+                  onPressed: () => context.go('/login'),
+                  child: const Text("Login"),
                 ),
               ],
             ),
