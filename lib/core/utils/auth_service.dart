@@ -98,7 +98,7 @@ class AuthService {
   }
 
   /// Sign in
-  static Future<String?> signIn({
+  static Future<String?> signInWithEmail({
     required String email,
     required String password,
   }) async {
@@ -107,16 +107,45 @@ class AuthService {
         email: email,
         password: password,
       );
-
-      if (response.user == null) {
-        return "Sign in failed.";
-      }
-
+      if (response.user == null) return "Sign in failed. Try again.";
       return null;
     } on AuthException catch (e) {
       return e.message;
+    } catch (_) {
+      return "Unexpected error. Please try again.";
+    }
+  }
+
+  static Future<String?> signInWithSocial({
+    required OAuthProvider provider,
+    required VoidCallback onSuccess,
+  }) async {
+    final supabase = Supabase.instance.client;
+    late final StreamSubscription<AuthState> subscription;
+
+    try {
+      final completer = Completer<AuthState>();
+      subscription = supabase.auth.onAuthStateChange.listen((data) async {
+        final session = data.session;
+        if (session != null && !completer.isCompleted) {
+          completer.complete(data);
+        }
+      });
+
+      await supabase.auth.signInWithOAuth(
+        provider,
+        redirectTo: 'jobfinder://login-callback',
+      );
+
+      final data = await completer.future;
+      if (data.session?.user == null) return 'Social sign-in failed.';
+
+      onSuccess();
+      return null;
     } catch (e) {
-      return "Unexpected error occurred.";
+      return 'Social sign-in failed: $e';
+    } finally {
+      await subscription.cancel();
     }
   }
 
