@@ -38,7 +38,6 @@ dependencies:
   supabase_flutter: ^2.9.1
   shared_preferences: ^2.5.3
   flutter_riverpod: ^2.6.1
-  flutter_web_auth_2: ^2.0.6
 
 dev_dependencies:
   flutter_test:
