@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp.router(
       title: 'Job Finder',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
+      theme: AppColors.lightTheme,
       routerConfig: AppRouter.router,
     );
   }
