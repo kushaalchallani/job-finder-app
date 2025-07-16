@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthService {
@@ -35,57 +38,63 @@ class AuthService {
 
   static Future<String?> socialSignUp({
     required OAuthProvider provider,
-    required Function onSuccess,
+    required VoidCallback onSuccess,
   }) async {
+    final supabase = Supabase.instance.client;
+    late final StreamSubscription<AuthState> subscription;
+
     try {
-      // Start OAuth Flow
-      await Supabase.instance.client.auth.signInWithOAuth(
+      final completer = Completer<AuthState>();
+
+      subscription = supabase.auth.onAuthStateChange.listen((data) async {
+        final session = data.session;
+        if (session != null && !completer.isCompleted) {
+          completer.complete(data);
+        }
+      });
+
+      await supabase.auth.signInWithOAuth(
         provider,
         redirectTo: 'jobfinder://login-callback',
       );
 
-      // Wait briefly to let session settle
-      await Future.delayed(const Duration(seconds: 2));
+      final data = await completer.future;
+      final user = data.session?.user;
+      if (user == null) return 'No user returned from OAuth signup.';
 
-      final user = Supabase.instance.client.auth.currentUser;
-      if (user == null) return "Signup failed. No user returned.";
+      final email = user.email;
+      if (email == null) return 'Email not found from provider.';
 
       // Check if profile already exists
-      final existingProfile = await Supabase.instance.client
+      final response = await supabase
           .from('profiles')
           .select()
           .eq('id', user.id)
           .maybeSingle();
 
-      if (existingProfile == null) {
-        await Supabase.instance.client.from('profiles').insert({
+      if (response == null) {
+        await supabase.from('profiles').insert({
           'id': user.id,
-          'email': user.email,
+          'email': email,
           'full_name':
-              user.userMetadata?['name'] ??
               user.userMetadata?['full_name'] ??
-              user.email?.split('@').first ??
+              user.userMetadata?['name'] ??
               'User',
         });
       }
 
-      // ✅ Sign out after signup
-      await Supabase.instance.client.auth.signOut();
-
-      // Navigate back to login or whatever
       onSuccess();
-
       return null;
+    } on AuthException catch (e) {
+      if (e.message.contains('code verifier')) {
+        return 'OAuth failed — app may have been hot reloaded. Please restart and try again.';
+      }
+      return 'OAuth failed: ${e.message}';
     } catch (e) {
-      return "Signup failed: $e";
+      return 'Social signup failed: $e';
+    } finally {
+      await subscription.cancel();
     }
-  }
-
-  static Future<void> startFacebookSignup() async {
-    await Supabase.instance.client.auth.signInWithOAuth(
-      OAuthProvider.facebook,
-      redirectTo: 'jobfinder://login-callback',
-    );
   }
 
   /// Sign in

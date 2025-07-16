@@ -139,7 +139,11 @@ class _SignUpPageState extends State<SignUpPage> {
                   onPressed: () async {
                     await AuthService.socialSignUp(
                       provider: OAuthProvider.google,
-                      onSuccess: () => context.go('/login'),
+                      onSuccess: () {
+                        if (context.mounted) {
+                          context.go('/login');
+                        }
+                      },
                     );
                   },
                   icon: Image.asset('assets/icons/google.png', height: 32),
@@ -149,7 +153,11 @@ class _SignUpPageState extends State<SignUpPage> {
                   onPressed: () async {
                     await AuthService.socialSignUp(
                       provider: OAuthProvider.facebook,
-                      onSuccess: () => context.go('/login'),
+                      onSuccess: () {
+                        if (context.mounted) {
+                          context.go('/login');
+                        }
+                      },
                     );
                   },
                   icon: Image.asset('assets/icons/facebook.png', height: 32),
