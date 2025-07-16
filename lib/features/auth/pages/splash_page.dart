@@ -37,14 +37,14 @@ class _SplashPageState extends State<SplashPage> {
       if (user != null) {
         context.go('/home');
       } else {
-        context.go('/signin');
+        context.go('/login');
       }
     }
   }
 
   void _onGetStarted() async {
     await SharedPrefs.setOpened();
-    context.go('/signin');
+    context.go('/login');
   }
 
   @override
