@@ -1,5 +1,8 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:job_finder_app/core/theme/app_theme.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/utils/shared_prefs.dart';
 
@@ -47,51 +50,55 @@ class _SplashPageState extends State<SplashPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.onPrimary,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const SizedBox(),
-              Center(child: Image.asset('assets/images/logo.png', height: 600)),
-              Column(
-                children: [
-                  if (_isFirstLaunch)
-                    ElevatedButton(
-                      onPressed: _onGetStarted,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        minimumSize: const Size.fromHeight(50),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const SizedBox(),
+                Center(
+                  child: Image.asset('assets/images/logo.png', height: 600),
+                ),
+                Column(
+                  children: [
+                    if (_isFirstLaunch)
+                      ElevatedButton(
+                        onPressed: _onGetStarted,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          minimumSize: const Size.fromHeight(50),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
+                        child: const Text(
+                          "Get Started",
+                          style: TextStyle(fontSize: 16, color: Colors.white),
+                        ),
+                      )
+                    else if (_isLoading)
+                      const CircularProgressIndicator(
+                        color: AppColors.primary,
+                        strokeWidth: 2,
                       ),
-                      child: const Text(
-                        "Get Started",
-                        style: TextStyle(fontSize: 16, color: Colors.white),
+
+                    const SizedBox(height: 20),
+
+                    const Text(
+                      "Powered by Job Finder",
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w500,
                       ),
-                    )
-                  else if (_isLoading)
-                    const CircularProgressIndicator(
-                      color: Colors.blue,
-                      strokeWidth: 2,
                     ),
-
-                  const SizedBox(height: 20),
-
-                  const Text(
-                    "Powered by Job Finder",
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
