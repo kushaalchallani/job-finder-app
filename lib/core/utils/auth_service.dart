@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthService {
@@ -152,6 +153,9 @@ class AuthService {
   /// Sign out
   static Future<void> signOut() async {
     await _client.auth.signOut();
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('hasOpenedBefore');
   }
 
   /// Current user
