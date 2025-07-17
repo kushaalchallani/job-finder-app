@@ -16,10 +16,11 @@ void main() async {
     anonKey: Secrets.supabaseAnonKey,
   );
 
+  // Initialize deep link handling
   final appLinks = AppLinks();
   final initialUri = await appLinks.getInitialAppLink();
 
-  // ✅ ONLY handle login callback **if** code is present in URI
+  // Only handle OAuth if code is present
   if (initialUri != null && initialUri.queryParameters.containsKey('code')) {
     try {
       await Supabase.instance.client.auth.getSessionFromUrl(initialUri);
@@ -33,11 +34,11 @@ void main() async {
   runApp(const ProviderScope(child: MyApp()));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp.router(
       title: 'Job Finder',
       debugShowCheckedModeBanner: false,

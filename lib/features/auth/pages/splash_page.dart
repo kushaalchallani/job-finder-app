@@ -34,6 +34,9 @@ class _SplashPageState extends State<SplashPage> {
       });
     } else {
       await Future.delayed(const Duration(seconds: 2));
+
+      if (!mounted) return;
+
       if (user != null) {
         context.go('/home');
       } else {
