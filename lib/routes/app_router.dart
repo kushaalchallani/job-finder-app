@@ -1,4 +1,4 @@
-// ignore_for_file: depend_on_referenced_packages
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,12 +8,29 @@ import '../features/auth/pages/sign_up_page.dart';
 import '../features/auth/pages/login_page.dart';
 import '../features/auth/pages/home_page.dart';
 
+class GoRouterRefreshStream extends ChangeNotifier {
+  GoRouterRefreshStream(Stream<AuthState> stream) {
+    _subscription = stream.listen((_) => notifyListeners());
+  }
+
+  late final StreamSubscription<AuthState> _subscription;
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
+  }
+}
+
 class AppRouter {
   static final navigatorKey = GlobalKey<NavigatorState>();
 
   static final router = GoRouter(
     navigatorKey: navigatorKey,
     initialLocation: '/',
+    refreshListenable: GoRouterRefreshStream(
+      Supabase.instance.client.auth.onAuthStateChange,
+    ),
     routes: [
       GoRoute(
         path: '/',
@@ -28,7 +45,8 @@ class AppRouter {
       GoRoute(
         path: '/login',
         name: 'login',
-        builder: (context, state) => const LoginPage(),
+        builder: (context, state) =>
+            LoginPage(errorMessage: state.extra as String?),
       ),
       GoRoute(
         path: '/home',
@@ -36,11 +54,10 @@ class AppRouter {
         builder: (context, state) => const HomePage(),
       ),
     ],
-
     redirect: (context, state) {
       final session = Supabase.instance.client.auth.currentSession;
       final isLoggedIn = session != null;
-      final goingToLogin =
+      final goingToAuth =
           state.matchedLocation == '/login' ||
           state.matchedLocation == '/signup';
 
@@ -48,7 +65,7 @@ class AppRouter {
         return '/login';
       }
 
-      if (isLoggedIn && goingToLogin) {
+      if (isLoggedIn && goingToAuth) {
         return '/home';
       }
 
@@ -57,5 +74,4 @@ class AppRouter {
   );
 }
 
-/// ✅ Riverpod provider for the router
 final routerProvider = Provider<GoRouter>((ref) => AppRouter.router);

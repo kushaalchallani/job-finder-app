@@ -4,9 +4,11 @@ import 'package:job_finder_app/core/utils/auth_service.dart';
 import 'package:job_finder_app/core/widgets/button.dart';
 import 'package:job_finder_app/core/widgets/text_field.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:job_finder_app/core/utils/shared_prefs.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  final String? errorMessage;
+  const LoginPage({super.key, this.errorMessage});
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -19,6 +21,26 @@ class _LoginPageState extends State<LoginPage> {
   bool _isLoading = false;
   bool _isSocialLoading = false;
   String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final state = GoRouterState.of(context);
+      final extra = state.extra;
+      if (extra != null && extra is Map && extra['error'] != null) {
+        final errorMsg = extra['error'] as String;
+        setState(() => _error = errorMsg);
+      }
+
+      final savedError = SharedPrefs.getString('loginError');
+      if (savedError != null) {
+        setState(() => _error = savedError);
+        await SharedPrefs.remove('loginError');
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -38,17 +60,16 @@ class _LoginPageState extends State<LoginPage> {
       password: _passwordController.text,
     );
 
-    setState(() => _isLoading = false);
-
     if (!mounted) return;
+
     setState(() {
       _isLoading = false;
-      if (error != null) {
-        _error = error;
-      } else {
-        context.go('/home');
-      }
+      _error = error;
     });
+
+    if (error == null) {
+      context.go('/home');
+    }
   }
 
   Future<void> _handleSocialSignIn(OAuthProvider provider) async {
@@ -57,29 +78,20 @@ class _LoginPageState extends State<LoginPage> {
       _error = null;
     });
 
-    try {
-      final error = await AuthService.signInWithSocial(
-        provider: provider,
-        onSuccess: () {
-          if (mounted) {
-            context.go('/home');
-          }
-        },
-      );
+    final error = await AuthService.signInWithSocial(
+      provider: provider,
+      context: context,
+    );
 
-      if (!mounted) return;
+    if (!mounted) return;
 
-      if (error != null) {
-        setState(() => _error = error);
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _error = 'Social login was cancelled or failed.');
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isSocialLoading = false);
-      }
+    setState(() {
+      _isSocialLoading = false;
+      _error = error;
+    });
+
+    if (error == null) {
+      context.go('/home');
     }
   }
 
@@ -101,19 +113,39 @@ class _LoginPageState extends State<LoginPage> {
                 "Sign in to continue your job hunt",
                 style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
+
+              if (_error != null)
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    // ignore: deprecated_member_use
+                    color: Colors.red.withOpacity(0.1),
+                    border: Border.all(color: Colors.red),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    _error!,
+                    style: const TextStyle(color: Colors.red),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+
               AuthTextField(
                 controller: _emailController,
                 label: "Email",
                 keyboardType: TextInputType.emailAddress,
               ),
               const SizedBox(height: 16),
+
               AuthTextField(
                 controller: _passwordController,
                 label: "Password",
                 obscureText: true,
               ),
               const SizedBox(height: 8),
+
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
@@ -121,20 +153,14 @@ class _LoginPageState extends State<LoginPage> {
                   child: const Text("Forgot Password?"),
                 ),
               ),
-              if (_error != null)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: Text(
-                    _error!,
-                    style: const TextStyle(color: Colors.red),
-                  ),
-                ),
+
               PrimaryButton(
                 text: "Sign In",
                 isLoading: _isLoading,
                 onPressed: _handleEmailSignIn,
               ),
               const SizedBox(height: 24),
+
               const Row(
                 children: [
                   Expanded(child: Divider(thickness: 1)),
@@ -146,6 +172,7 @@ class _LoginPageState extends State<LoginPage> {
                 ],
               ),
               const SizedBox(height: 16),
+
               _isSocialLoading
                   ? const Center(child: CircularProgressIndicator())
                   : Row(
@@ -171,6 +198,7 @@ class _LoginPageState extends State<LoginPage> {
                       ],
                     ),
               const SizedBox(height: 24),
+
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

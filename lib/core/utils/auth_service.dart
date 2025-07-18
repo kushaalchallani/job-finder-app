@@ -1,6 +1,7 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:job_finder_app/core/utils/shared_prefs.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -128,21 +129,21 @@ class AuthService {
   // Social Sign In
   static Future<String?> signInWithSocial({
     required OAuthProvider provider,
-    required VoidCallback onSuccess,
+    required BuildContext context,
   }) async {
     final supabase = Supabase.instance.client;
     late final StreamSubscription<AuthState> subscription;
 
+    final completer = Completer<AuthState>();
+
+    subscription = supabase.auth.onAuthStateChange.listen((data) {
+      final session = data.session;
+      if (session != null && !completer.isCompleted) {
+        completer.complete(data);
+      }
+    });
+
     try {
-      final completer = Completer<AuthState>();
-
-      subscription = supabase.auth.onAuthStateChange.listen((data) async {
-        final session = data.session;
-        if (session != null && !completer.isCompleted) {
-          completer.complete(data);
-        }
-      });
-
       await supabase.auth.signInWithOAuth(
         provider,
         redirectTo: 'jobfinder://login-callback',
@@ -150,13 +151,12 @@ class AuthService {
 
       final data = await completer.future.timeout(
         const Duration(seconds: 30),
-        onTimeout: () => throw TimeoutException('User cancelled or timed out.'),
+        onTimeout: () => throw TimeoutException('Login timed out'),
       );
 
       final user = data.session?.user;
-      if (user == null) return 'Social sign-in failed.';
+      if (user == null) throw Exception("No user returned");
 
-      // 🔍 Check if profile exists
       final profile = await supabase
           .from('profiles')
           .select()
@@ -165,15 +165,23 @@ class AuthService {
 
       if (profile == null) {
         await supabase.auth.signOut();
-        return 'No account found. Please sign up first.';
+        await SharedPrefs.setString(
+          'loginError',
+          'Please sign up before logging in.',
+        );
+        // ignore: use_build_context_synchronously
+        context.go('/login'); // Go back to Splash to show error
       }
 
-      onSuccess();
+      if (context.mounted) {
+        context.go('/home');
+      }
+
       return null;
     } on TimeoutException {
-      return 'Login cancelled or timed out.';
+      return "Login timed out. Try again.";
     } catch (e) {
-      return 'Social sign-in failed: $e';
+      return "Social login failed: $e";
     } finally {
       await subscription.cancel();
     }
@@ -187,6 +195,5 @@ class AuthService {
     await prefs.remove('hasOpenedBefore');
   }
 
-  /// Current user getter
   static User? get currentUser => _client.auth.currentUser;
 }
