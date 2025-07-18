@@ -16,7 +16,13 @@ class AuthService {
     required BuildContext context,
   }) async {
     try {
-      final res = await _client.auth.signUp(email: email, password: password);
+      final res = await _client.auth.signUp(
+        email: email,
+        password: password,
+        data: {
+          'display_name': fullName, // This sets metadata
+        },
+      );
 
       final user = res.user;
       if (user == null) {
