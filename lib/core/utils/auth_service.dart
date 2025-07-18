@@ -125,7 +125,7 @@ class AuthService {
     }
   }
 
-  /// Social Sign In
+  // Social Sign In
   static Future<String?> signInWithSocial({
     required OAuthProvider provider,
     required VoidCallback onSuccess,
@@ -153,7 +153,20 @@ class AuthService {
         onTimeout: () => throw TimeoutException('User cancelled or timed out.'),
       );
 
-      if (data.session?.user == null) return 'Social sign-in failed.';
+      final user = data.session?.user;
+      if (user == null) return 'Social sign-in failed.';
+
+      // 🔍 Check if profile exists
+      final profile = await supabase
+          .from('profiles')
+          .select()
+          .eq('id', user.id)
+          .maybeSingle();
+
+      if (profile == null) {
+        await supabase.auth.signOut();
+        return 'No account found. Please sign up first.';
+      }
 
       onSuccess();
       return null;
