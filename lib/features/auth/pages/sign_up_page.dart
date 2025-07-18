@@ -49,17 +49,16 @@ class _SignUpPageState extends State<SignUpPage> {
       _error = null;
     });
 
-    final error = await AuthService.signUp(
-      name: name,
+    final error = await AuthService.signUpWithEmail(
+      fullName: name,
       email: email,
       password: password,
+      context: context,
     );
 
     if (!mounted) return;
 
-    if (error == null) {
-      context.go('/login');
-    } else {
+    if (error != null) {
       setState(() => _error = error);
     }
 

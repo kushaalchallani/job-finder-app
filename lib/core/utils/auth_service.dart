@@ -9,32 +9,37 @@ class AuthService {
   static final _client = Supabase.instance.client;
 
   /// Sign up with email, password, and full name
-  static Future<String?> signUp({
-    required String name,
+  static Future<String?> signUpWithEmail({
     required String email,
     required String password,
+    required String fullName,
+    required BuildContext context,
   }) async {
     try {
-      final response = await _client.auth.signUp(
-        email: email,
-        password: password,
-      );
+      final res = await _client.auth.signUp(email: email, password: password);
 
-      final user = response.user;
-      if (user == null) return "Sign up failed. Please try again.";
+      final user = res.user;
+      if (user == null) {
+        return 'Signup failed. User not created.';
+      }
 
-      // Insert into profiles table
+      // Insert into 'profiles' table
       await _client.from('profiles').insert({
         'id': user.id,
-        'full_name': name,
+        'full_name': fullName,
         'email': email,
       });
 
+      // Immediately sign the user out after signup
+      await _client.auth.signOut();
+
+      if (context.mounted) {
+        context.go('/login'); // Redirect to login page manually
+      }
+
       return null; // success
-    } on AuthException catch (e) {
-      return e.message;
     } catch (e) {
-      return "Unexpected error occurred. Please try again.";
+      return e.toString(); // return error message
     }
   }
 
@@ -43,20 +48,19 @@ class AuthService {
     required OAuthProvider provider,
     required VoidCallback onSuccess,
   }) async {
-    final supabase = Supabase.instance.client;
     late final StreamSubscription<AuthState> subscription;
 
     try {
       final completer = Completer<AuthState>();
 
-      subscription = supabase.auth.onAuthStateChange.listen((data) async {
+      subscription = _client.auth.onAuthStateChange.listen((data) async {
         final session = data.session;
         if (session != null && !completer.isCompleted) {
           completer.complete(data);
         }
       });
 
-      await supabase.auth.signInWithOAuth(
+      await _client.auth.signInWithOAuth(
         provider,
         redirectTo: 'jobfinder://login-callback',
       );
@@ -73,14 +77,14 @@ class AuthService {
       if (email == null) return 'Email not found from provider.';
 
       // Check if profile already exists
-      final response = await supabase
+      final response = await _client
           .from('profiles')
           .select()
           .eq('id', user.id)
           .maybeSingle();
 
       if (response == null) {
-        await supabase.from('profiles').insert({
+        await _client.from('profiles').insert({
           'id': user.id,
           'email': email,
           'full_name':
@@ -90,7 +94,7 @@ class AuthService {
         });
       }
 
-      await supabase.auth.signOut();
+      await _client.auth.signOut();
       onSuccess();
       return null;
     } on TimeoutException {
@@ -131,12 +135,11 @@ class AuthService {
     required OAuthProvider provider,
     required BuildContext context,
   }) async {
-    final supabase = Supabase.instance.client;
     late final StreamSubscription<AuthState> subscription;
 
     final completer = Completer<AuthState>();
 
-    subscription = supabase.auth.onAuthStateChange.listen((data) {
+    subscription = _client.auth.onAuthStateChange.listen((data) {
       final session = data.session;
       if (session != null && !completer.isCompleted) {
         completer.complete(data);
@@ -144,7 +147,7 @@ class AuthService {
     });
 
     try {
-      await supabase.auth.signInWithOAuth(
+      await _client.auth.signInWithOAuth(
         provider,
         redirectTo: 'jobfinder://login-callback',
       );
@@ -157,14 +160,14 @@ class AuthService {
       final user = data.session?.user;
       if (user == null) throw Exception("No user returned");
 
-      final profile = await supabase
+      final profile = await _client
           .from('profiles')
           .select()
           .eq('id', user.id)
           .maybeSingle();
 
       if (profile == null) {
-        await supabase.auth.signOut();
+        await _client.auth.signOut();
         await SharedPrefs.setString(
           'loginError',
           'Please sign up before logging in.',
