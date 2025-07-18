@@ -57,21 +57,30 @@ class _LoginPageState extends State<LoginPage> {
       _error = null;
     });
 
-    final error = await AuthService.signInWithSocial(
-      provider: provider,
-      onSuccess: () {
-        if (mounted) {
-          context.go('/home'); // navigate immediately on success
-        }
-      },
-    );
+    try {
+      final error = await AuthService.signInWithSocial(
+        provider: provider,
+        onSuccess: () {
+          if (mounted) {
+            context.go('/home');
+          }
+        },
+      );
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    setState(() {
-      _isSocialLoading = false;
-      if (error != null) _error = error;
-    });
+      if (error != null) {
+        setState(() => _error = error);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _error = 'Social login was cancelled or failed.');
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSocialLoading = false);
+      }
+    }
   }
 
   @override

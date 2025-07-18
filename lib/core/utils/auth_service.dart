@@ -37,6 +37,7 @@ class AuthService {
     }
   }
 
+  /// Social Sign Up
   static Future<String?> socialSignUp({
     required OAuthProvider provider,
     required VoidCallback onSuccess,
@@ -59,7 +60,11 @@ class AuthService {
         redirectTo: 'jobfinder://login-callback',
       );
 
-      final data = await completer.future;
+      final data = await completer.future.timeout(
+        const Duration(seconds: 30),
+        onTimeout: () => throw TimeoutException('User cancelled or timed out.'),
+      );
+
       final user = data.session?.user;
       if (user == null) return 'No user returned from OAuth signup.';
 
@@ -84,8 +89,11 @@ class AuthService {
         });
       }
 
+      await supabase.auth.signOut();
       onSuccess();
       return null;
+    } on TimeoutException {
+      return 'Login cancelled or timed out.';
     } on AuthException catch (e) {
       if (e.message.contains('code verifier')) {
         return 'OAuth failed — app may have been hot reloaded. Please restart and try again.';
@@ -98,7 +106,7 @@ class AuthService {
     }
   }
 
-  /// Sign in
+  /// Email + Password Sign In
   static Future<String?> signInWithEmail({
     required String email,
     required String password,
@@ -117,6 +125,7 @@ class AuthService {
     }
   }
 
+  /// Social Sign In
   static Future<String?> signInWithSocial({
     required OAuthProvider provider,
     required VoidCallback onSuccess,
@@ -126,6 +135,7 @@ class AuthService {
 
     try {
       final completer = Completer<AuthState>();
+
       subscription = supabase.auth.onAuthStateChange.listen((data) async {
         final session = data.session;
         if (session != null && !completer.isCompleted) {
@@ -138,11 +148,17 @@ class AuthService {
         redirectTo: 'jobfinder://login-callback',
       );
 
-      final data = await completer.future;
+      final data = await completer.future.timeout(
+        const Duration(seconds: 30),
+        onTimeout: () => throw TimeoutException('User cancelled or timed out.'),
+      );
+
       if (data.session?.user == null) return 'Social sign-in failed.';
 
       onSuccess();
       return null;
+    } on TimeoutException {
+      return 'Login cancelled or timed out.';
     } catch (e) {
       return 'Social sign-in failed: $e';
     } finally {
@@ -158,6 +174,6 @@ class AuthService {
     await prefs.remove('hasOpenedBefore');
   }
 
-  /// Current user
+  /// Current user getter
   static User? get currentUser => _client.auth.currentUser;
 }
