@@ -53,6 +53,7 @@ class AuthService {
   static Future<String?> socialSignUp({
     required OAuthProvider provider,
     required VoidCallback onSuccess,
+    BuildContext? context,
   }) async {
     late final StreamSubscription<AuthState> subscription;
 
@@ -82,7 +83,32 @@ class AuthService {
       final email = user.email;
       if (email == null) return 'Email not found from provider.';
 
-      // Check if profile already exists
+      // Check if email already exists in the database
+      final existingEmailCheck = await _client
+          .from('profiles')
+          .select('email')
+          .eq('email', email)
+          .maybeSingle();
+
+      if (existingEmailCheck != null) {
+        // Email already exists, sign out and redirect to login with error
+        await _client.auth.signOut();
+
+        // Store error message for login page
+        await SharedPrefs.setString(
+          'loginError',
+          'An account with this email already exists. Please sign in instead.',
+        );
+
+        // Redirect to login page if context is provided
+        if (context != null && context.mounted) {
+          context.go('/login');
+        }
+
+        return 'An account with this email already exists. Please sign in instead.';
+      }
+
+      // Check if profile already exists for this user ID
       final response = await _client
           .from('profiles')
           .select()
@@ -179,7 +205,7 @@ class AuthService {
           'Please sign up before logging in.',
         );
         // ignore: use_build_context_synchronously
-        context.go('/login'); // Go back to Splash to show error
+        context.go('/login');
       }
 
       if (context.mounted) {

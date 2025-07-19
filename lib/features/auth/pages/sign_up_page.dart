@@ -73,6 +73,7 @@ class _SignUpPageState extends State<SignUpPage> {
 
     final error = await AuthService.socialSignUp(
       provider: provider,
+      context: context,
       onSuccess: () {
         if (context.mounted) {
           context.go('/login');

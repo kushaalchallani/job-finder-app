@@ -39,6 +39,12 @@ class _LoginPageState extends State<LoginPage> {
         setState(() => _error = savedError);
         await SharedPrefs.remove('loginError');
       }
+
+      final signupError = SharedPrefs.getString('signupError');
+      if (signupError != null) {
+        setState(() => _error = signupError);
+        await SharedPrefs.remove('signupError');
+      }
     });
   }
 
