@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:job_finder_app/core/secrets/supabase_secrets.dart';
 import 'package:job_finder_app/core/utils/shared_prefs.dart';
+import 'package:job_finder_app/core/utils/auth_service.dart';
 import 'package:job_finder_app/core/theme/app_theme.dart';
 import 'package:job_finder_app/routes/app_router.dart';
 // ignore: depend_on_referenced_packages
@@ -16,17 +17,18 @@ void main() async {
     anonKey: Secrets.supabaseAnonKey,
   );
 
-  // Initialize deep link handling
   final appLinks = AppLinks();
   final initialUri = await appLinks.getInitialAppLink();
 
-  // Only handle OAuth if code is present
   if (initialUri != null && initialUri.queryParameters.containsKey('code')) {
     try {
       await Supabase.instance.client.auth.getSessionFromUrl(initialUri);
     } catch (e) {
       debugPrint('⚠️ Ignored OAuth redirect error: $e');
+      await AuthService.clearOAuthState();
     }
+  } else {
+    await AuthService.clearOAuthState();
   }
 
   await SharedPrefs.init();

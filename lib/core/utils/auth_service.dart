@@ -9,6 +9,14 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class AuthService {
   static final _client = Supabase.instance.client;
 
+  static Future<void> clearOAuthState() async {
+    try {
+      await _client.auth.signOut();
+    } catch (e) {
+      // ignore errors when clearing state
+    }
+  }
+
   /// Sign up with email, password, and full name
   static Future<String?> signUpWithEmail({
     required String email,
@@ -123,9 +131,12 @@ class AuthService {
     } on TimeoutException {
       return ErrorHandler.getUserFriendlyError('Login cancelled or timed out.');
     } on AuthException catch (e) {
-      if (e.message.contains('code verifier')) {
+      if (e.message.contains('code verifier') ||
+          e.message.contains('flow state') ||
+          e.message.contains('flow_state_not_found')) {
+        await clearOAuthState();
         return ErrorHandler.getUserFriendlyError(
-          'OAuth failed — app may have been hot reloaded. Please restart and try again.',
+          'OAuth session expired. Please try again.',
         );
       }
       return ErrorHandler.getUserFriendlyError('OAuth failed: ${e.message}');
@@ -210,6 +221,16 @@ class AuthService {
       return null;
     } on TimeoutException {
       return ErrorHandler.getNetworkError("Login timed out. Try again.");
+    } on AuthException catch (e) {
+      if (e.message.contains('code verifier') ||
+          e.message.contains('flow state') ||
+          e.message.contains('flow_state_not_found')) {
+        await clearOAuthState();
+        return ErrorHandler.getUserFriendlyError(
+          'OAuth session expired. Please try again.',
+        );
+      }
+      return ErrorHandler.getUserFriendlyError('OAuth failed: ${e.message}');
     } catch (e) {
       return ErrorHandler.getUserFriendlyError("Social login failed: $e");
     } finally {
