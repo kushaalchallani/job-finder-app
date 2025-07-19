@@ -96,7 +96,7 @@ class _SignUpPageState extends State<SignUpPage> {
         child: ListView(
           padding: const EdgeInsets.all(24),
           children: [
-            const SizedBox(height: 32),
+            const SizedBox(height: 18),
             const Text(
               "Create Account",
               style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
@@ -106,7 +106,7 @@ class _SignUpPageState extends State<SignUpPage> {
               "Join us and start your job search today!",
               style: TextStyle(fontSize: 16, color: Colors.grey),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 18),
             if (_error != null)
               Container(
                 padding: const EdgeInsets.all(12),
@@ -187,7 +187,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       ),
                     ],
                   ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 18),
 
             Row(
               mainAxisAlignment: MainAxisAlignment.center,

@@ -109,7 +109,7 @@ class _LoginPageState extends State<LoginPage> {
           padding: const EdgeInsets.all(24.0),
           child: ListView(
             children: [
-              const SizedBox(height: 32),
+              const SizedBox(height: 18),
               const Text(
                 "Welcome Back",
                 style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
@@ -119,7 +119,7 @@ class _LoginPageState extends State<LoginPage> {
                 "Sign in to continue your job hunt",
                 style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 18),
 
               if (_error != null)
                 Container(
@@ -203,7 +203,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ],
                     ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 18),
 
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,

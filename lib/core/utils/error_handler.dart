@@ -1,9 +1,10 @@
+// ignore_for_file: avoid_print
+
 class ErrorHandler {
   /// Convert technical error messages to user-friendly messages
   static String getUserFriendlyError(String error) {
     final lowerError = error.toLowerCase();
 
-    // Debug: Print the actual error for development
     print('DEBUG - Original error: $error');
     print('DEBUG - Lowercase error: $lowerError');
 
