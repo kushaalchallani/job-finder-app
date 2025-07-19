@@ -53,7 +53,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = 'Failed to send reset link. Please try again.';
+          _error = e.toString().replaceAll('Exception: ', '');
           _isLoading = false;
         });
       }

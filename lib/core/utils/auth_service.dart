@@ -40,6 +40,7 @@ class AuthService {
         'id': user.id,
         'full_name': fullName,
         'email': email,
+        'sign_up_method': 'email',
       });
 
       await _client.auth.signOut();
@@ -122,6 +123,7 @@ class AuthService {
               user.userMetadata?['full_name'] ??
               user.userMetadata?['name'] ??
               'User',
+          'sign_up_method': provider.name,
         });
       }
 
@@ -131,6 +133,11 @@ class AuthService {
     } on TimeoutException {
       return ErrorHandler.getUserFriendlyError('Login cancelled or timed out.');
     } on AuthException catch (e) {
+      if (e.message.contains('code verifier')) {
+        await clearOAuthState();
+
+        return null;
+      }
       if (e.message.contains('code verifier') ||
           e.message.contains('flow state') ||
           e.message.contains('flow_state_not_found')) {
@@ -248,17 +255,75 @@ class AuthService {
 
   static User? get currentUser => _client.auth.currentUser;
 
+  /// Check if user exists and can reset password (strict: only email signups)
+  static Future<Map<String, dynamic>> checkPasswordResetEligibility({
+    required String email,
+  }) async {
+    try {
+      final profile = await _client
+          .from('profiles')
+          .select('sign_up_method')
+          .eq('email', email)
+          .maybeSingle();
+
+      if (profile == null) {
+        return {
+          'exists': false,
+          'canReset': false,
+          'message': 'No account found with this email address.',
+        };
+      }
+
+      if (profile['sign_up_method'] != 'email') {
+        return {
+          'exists': true,
+          'canReset': false,
+          'message':
+              'Password reset is not available for this account. Please use your social login provider to sign in.',
+        };
+      }
+
+      try {
+        await _client.auth.resetPasswordForEmail(
+          email,
+          redirectTo: 'jobfinder://reset-password',
+        );
+        return {
+          'exists': true,
+          'canReset': true,
+          'message': 'Password reset link sent to your email!',
+        };
+      } on AuthException catch (e) {
+        if (e.message.contains('Email not confirmed')) {
+          return {
+            'exists': true,
+            'canReset': false,
+            'message':
+                'Please confirm your email address before resetting your password.',
+          };
+        } else {
+          return {
+            'exists': true,
+            'canReset': false,
+            'message': ErrorHandler.getAuthError(e.message),
+          };
+        }
+      }
+    } catch (e) {
+      return {
+        'exists': false,
+        'canReset': false,
+        'message': 'An error occurred while checking your account.',
+      };
+    }
+  }
+
   /// Reset password by sending reset email
   static Future<void> resetPassword({required String email}) async {
-    try {
-      await _client.auth.resetPasswordForEmail(
-        email,
-        redirectTo: 'jobfinder://reset-password',
-      );
-    } on AuthException catch (e) {
-      throw Exception(ErrorHandler.getAuthError(e.message));
-    } catch (e) {
-      throw Exception(ErrorHandler.getUserFriendlyError(e.toString()));
+    final result = await checkPasswordResetEligibility(email: email);
+
+    if (!result['canReset']) {
+      throw Exception(result['message']);
     }
   }
 

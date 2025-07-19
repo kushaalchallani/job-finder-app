@@ -76,7 +76,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = 'Failed to update password. Please try again.';
+          _error = e.toString().replaceAll('Exception: ', '');
           _isLoading = false;
         });
       }

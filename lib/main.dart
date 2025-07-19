@@ -8,6 +8,7 @@ import 'package:job_finder_app/core/theme/app_theme.dart';
 import 'package:job_finder_app/routes/app_router.dart';
 // ignore: depend_on_referenced_packages
 import 'package:app_links/app_links.dart';
+import 'package:job_finder_app/core/utils/auth_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,6 +17,19 @@ void main() async {
     url: Secrets.supabaseUrl,
     anonKey: Secrets.supabaseAnonKey,
   );
+
+  final appLinks = AppLinks();
+  final initialUri = await appLinks.getInitialAppLink();
+
+  if (initialUri != null && initialUri.queryParameters.containsKey('code')) {
+    try {
+      await Supabase.instance.client.auth.getSessionFromUrl(initialUri);
+    } catch (e) {
+      await AuthService.clearOAuthState();
+    }
+  } else {
+    await AuthService.clearOAuthState();
+  }
 
   await SharedPrefs.init();
 
@@ -45,7 +59,6 @@ class _MyAppState extends ConsumerState<MyApp> {
     try {
       final initialUri = await _appLinks.getInitialAppLink();
       if (initialUri != null) {
-        debugPrint('🔗 Initial deep link received: $initialUri');
         await _processDeepLink(initialUri);
       }
     } catch (e) {
@@ -57,7 +70,6 @@ class _MyAppState extends ConsumerState<MyApp> {
     _linkSubscription = _appLinks.uriLinkStream.listen(
       (Uri? uri) async {
         if (uri != null) {
-          debugPrint('🔗 Incoming deep link received: $uri');
           await _processDeepLink(uri);
         }
       },
