@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -8,7 +7,8 @@ import 'package:job_finder_app/core/theme/app_theme.dart';
 import 'package:job_finder_app/routes/app_router.dart';
 // ignore: depend_on_referenced_packages
 import 'package:app_links/app_links.dart';
-import 'package:job_finder_app/core/utils/auth_service.dart';
+import 'package:job_finder_app/features/auth/services/auth_service.dart';
+import 'package:job_finder_app/core/services/deep_link_handler.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,89 +44,18 @@ class MyApp extends ConsumerStatefulWidget {
 }
 
 class _MyAppState extends ConsumerState<MyApp> {
-  late final AppLinks _appLinks;
-  StreamSubscription<Uri>? _linkSubscription;
+  DeepLinkHandler? _deepLinkHandler;
 
   @override
   void initState() {
     super.initState();
-    _appLinks = AppLinks();
-    _handleInitialLink();
-    _handleIncomingLinks();
-  }
-
-  Future<void> _handleInitialLink() async {
-    try {
-      final initialUri = await _appLinks.getInitialAppLink();
-      if (initialUri != null) {
-        await _processDeepLink(initialUri);
-      }
-    } catch (e) {
-      debugPrint('⚠️ Error handling initial link: $e');
-    }
-  }
-
-  void _handleIncomingLinks() {
-    _linkSubscription = _appLinks.uriLinkStream.listen(
-      (Uri? uri) async {
-        if (uri != null) {
-          await _processDeepLink(uri);
-        }
-      },
-      onError: (err) {
-        debugPrint('⚠️ Error handling incoming links: $err');
-      },
-    );
-  }
-
-  Future<void> _processDeepLink(Uri uri) async {
-    debugPrint('🔗 Processing deep link: $uri');
-    debugPrint('🔗 URI path: ${uri.path}');
-    debugPrint('🔗 URI query parameters: ${uri.queryParameters}');
-    debugPrint('🔗 Full URI string: ${uri.toString()}');
-
-    bool isPasswordReset =
-        uri.queryParameters.containsKey('access_token') ||
-        uri.queryParameters.containsKey('type') &&
-            uri.queryParameters['type'] == 'recovery' ||
-        uri.toString().contains('reset-password');
-
-    bool isOAuth =
-        (uri.queryParameters.containsKey('code') &&
-            uri.queryParameters.containsKey('state')) ||
-        uri.toString().contains('login-callback');
-
-    if (isPasswordReset && mounted) {
-      try {
-        await Supabase.instance.client.auth.getSessionFromUrl(uri);
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            AppRouter.router.go('/reset-password');
-          }
-        });
-      } catch (e) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            AppRouter.router.go('/reset-password');
-          }
-        });
-      }
-      return;
-    }
-
-    if (isOAuth) {
-      try {
-        await Supabase.instance.client.auth.getSessionFromUrl(uri);
-      } catch (e) {
-        // Handle OAuth error silently
-      }
-      return;
-    }
+    _deepLinkHandler = DeepLinkHandler(context);
+    _deepLinkHandler!.init();
   }
 
   @override
   void dispose() {
-    _linkSubscription?.cancel();
+    _deepLinkHandler?.dispose();
     super.dispose();
   }
 

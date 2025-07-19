@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:job_finder_app/core/utils/auth_service.dart';
+import 'package:job_finder_app/features/auth/services/auth_service.dart';
 import 'package:job_finder_app/core/widgets/button.dart';
 import 'package:job_finder_app/core/widgets/text_field.dart';
 
@@ -103,6 +103,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
               // Error message
               if (_error != null)
                 Container(
+                  width: double.infinity,
                   padding: const EdgeInsets.all(12),
                   margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
@@ -119,6 +120,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
               if (_successMessage != null)
                 Container(
+                  width: double.infinity,
                   padding: const EdgeInsets.all(12),
                   margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(

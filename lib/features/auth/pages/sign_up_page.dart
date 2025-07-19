@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:job_finder_app/core/widgets/button.dart';
 import 'package:job_finder_app/core/widgets/text_field.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../../core/utils/auth_service.dart';
+import '../services/auth_service.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -109,6 +109,7 @@ class _SignUpPageState extends State<SignUpPage> {
             const SizedBox(height: 18),
             if (_error != null)
               Container(
+                width: double.infinity,
                 padding: const EdgeInsets.all(12),
                 margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
