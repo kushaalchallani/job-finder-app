@@ -47,8 +47,10 @@ class AppRouter {
       GoRoute(
         path: '/login',
         name: 'login',
-        builder: (context, state) =>
-            LoginPage(errorMessage: state.extra as String?),
+        builder: (context, state) => LoginPage(
+          key: ValueKey(DateTime.now().millisecondsSinceEpoch),
+          errorMessage: state.extra as String?,
+        ),
       ),
       GoRoute(
         path: '/home',

@@ -1,23 +1,28 @@
 // ignore_for_file: deprecated_member_use
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:job_finder_app/features/auth/services/auth_service.dart';
 import 'package:job_finder_app/core/widgets/button.dart';
 import 'package:job_finder_app/core/widgets/text_field.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../controllers/forgot_password_controller.dart';
 
-class ForgotPasswordPage extends StatefulWidget {
+class ForgotPasswordPage extends ConsumerStatefulWidget {
   const ForgotPasswordPage({super.key});
 
   @override
-  State<ForgotPasswordPage> createState() => _ForgotPasswordPageState();
+  ConsumerState<ForgotPasswordPage> createState() => _ForgotPasswordPageState();
 }
 
-class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
+class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
   final _emailController = TextEditingController();
-  bool _isLoading = false;
-  String? _error;
-  String? _successMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(
+      () => ref.read(forgotPasswordControllerProvider.notifier).clearError(),
+    );
+  }
 
   @override
   void dispose() {
@@ -26,42 +31,14 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   }
 
   Future<void> _handleResetPassword() async {
-    final email = _emailController.text.trim();
-
-    if (email.isEmpty) {
-      setState(() {
-        _error = 'Please enter your email address.';
-      });
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-      _error = null;
-      _successMessage = null;
-    });
-
-    try {
-      await AuthService.resetPassword(email: email);
-
-      if (mounted) {
-        setState(() {
-          _successMessage = 'Password reset link sent to your email!';
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _error = e.toString().replaceAll('Exception: ', '');
-          _isLoading = false;
-        });
-      }
-    }
+    await ref
+        .read(forgotPasswordControllerProvider.notifier)
+        .sendResetLink(_emailController.text.trim());
   }
 
   @override
   Widget build(BuildContext context) {
+    final state = ref.watch(forgotPasswordControllerProvider);
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -86,22 +63,17 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                 ],
               ),
               const SizedBox(height: 16),
-
-              // Main heading
               const Text(
                 "Reset your password",
                 style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
-
               const Text(
                 "Enter the email associated with your account and we'll send an email with instructions to reset your password.",
                 style: TextStyle(fontSize: 16, color: Colors.grey, height: 1.5),
               ),
               const SizedBox(height: 32),
-
-              // Error message
-              if (_error != null)
+              if (state.error != null)
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(12),
@@ -112,13 +84,12 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    _error!,
+                    state.error!,
                     style: const TextStyle(color: Colors.red),
                     textAlign: TextAlign.center,
                   ),
                 ),
-
-              if (_successMessage != null)
+              if (state.successMessage != null)
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(12),
@@ -129,22 +100,20 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    _successMessage!,
+                    state.successMessage!,
                     style: const TextStyle(color: Colors.green),
                     textAlign: TextAlign.center,
                   ),
                 ),
-
               AuthTextField(
                 controller: _emailController,
                 label: "Email",
                 keyboardType: TextInputType.emailAddress,
               ),
               const SizedBox(height: 32),
-
               PrimaryButton(
                 text: "Send Reset Link",
-                isLoading: _isLoading,
+                isLoading: state.isLoading,
                 onPressed: _handleResetPassword,
               ),
             ],
