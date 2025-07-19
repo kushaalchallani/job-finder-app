@@ -247,4 +247,38 @@ class AuthService {
   }
 
   static User? get currentUser => _client.auth.currentUser;
+
+  /// Reset password by sending reset email
+  static Future<void> resetPassword({required String email}) async {
+    try {
+      await _client.auth.resetPasswordForEmail(
+        email,
+        redirectTo: 'jobfinder://reset-password',
+      );
+    } on AuthException catch (e) {
+      throw Exception(ErrorHandler.getAuthError(e.message));
+    } catch (e) {
+      throw Exception(ErrorHandler.getUserFriendlyError(e.toString()));
+    }
+  }
+
+  /// Update password after reset
+  static Future<void> updatePassword({required String newPassword}) async {
+    try {
+      final session = _client.auth.currentSession;
+      if (session == null) {
+        throw Exception(
+          'No active session. Please click the reset link in your email again.',
+        );
+      }
+
+      await _client.auth.updateUser(UserAttributes(password: newPassword));
+
+      await _client.auth.signOut();
+    } on AuthException catch (e) {
+      throw Exception(ErrorHandler.getAuthError(e.message));
+    } catch (e) {
+      throw Exception(ErrorHandler.getUserFriendlyError(e.toString()));
+    }
+  }
 }

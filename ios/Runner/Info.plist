@@ -55,6 +55,16 @@
 		<string>com.googleusercontent.apps.683773117982-4ku0cf27okp6d57f77s84tm7rc6gp4ip</string>
 		</array>
 	</dict>
+	<dict>
+		<key>CFBundleTypeRole</key>
+		<string>Editor</string>
+		<key>CFBundleURLName</key>
+		<string>jobfinder</string>
+		<key>CFBundleURLSchemes</key>
+		<array>
+		<string>jobfinder</string>
+		</array>
+	</dict>
 	</array>
 </dict>
 </plist>

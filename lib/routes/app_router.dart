@@ -7,6 +7,8 @@ import '../features/auth/pages/splash_page.dart';
 import '../features/auth/pages/sign_up_page.dart';
 import '../features/auth/pages/login_page.dart';
 import '../features/auth/pages/home_page.dart';
+import '../features/auth/pages/forgot_password_page.dart';
+import '../features/auth/pages/reset_password_page.dart';
 
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream<AuthState> stream) {
@@ -52,6 +54,16 @@ class AppRouter {
         path: '/home',
         name: 'home',
         builder: (context, state) => const HomePage(),
+      ),
+      GoRoute(
+        path: '/forgot-password',
+        name: 'forgot-password',
+        builder: (context, state) => const ForgotPasswordPage(),
+      ),
+      GoRoute(
+        path: '/reset-password',
+        name: 'reset-password',
+        builder: (context, state) => const ResetPasswordPage(),
       ),
     ],
     redirect: (context, state) {

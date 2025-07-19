@@ -34,6 +34,35 @@
                     android:scheme="jobfinder"
                     android:host="login-callback"/>
             </intent-filter>
+
+            <!-- ✅ Deep link intent for password reset -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data
+                    android:scheme="jobfinder"
+                    android:host="reset-password"/>
+            </intent-filter>
+
+            <!-- ✅ Deep link intent for password reset callback -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data
+                    android:scheme="jobfinder"
+                    android:host="reset-password-callback"/>
+            </intent-filter>
+
+            <!-- ✅ Generic deep link intent for any jobfinder:// URL -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data
+                    android:scheme="jobfinder"/>
+            </intent-filter>
         </activity>
 
         <!-- Flutter tooling -->
