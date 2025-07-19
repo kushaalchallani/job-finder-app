@@ -5,6 +5,7 @@ import 'package:job_finder_app/core/widgets/button.dart';
 import 'package:job_finder_app/core/widgets/text_field.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../controllers/reset_password_controller.dart';
+import 'package:job_finder_app/core/theme/app_theme.dart';
 
 class ResetPasswordPage extends ConsumerStatefulWidget {
   const ResetPasswordPage({super.key});
@@ -70,7 +71,11 @@ class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage> {
               const SizedBox(height: 16),
               const Text(
                 "Enter your new password below. Make sure it's secure and easy to remember.",
-                style: TextStyle(fontSize: 16, color: Colors.grey, height: 1.5),
+                style: TextStyle(
+                  fontSize: 16,
+                  color: AppColors.textSecondary,
+                  height: 1.5,
+                ),
               ),
               const SizedBox(height: 32),
               if (state.error != null)
@@ -79,13 +84,13 @@ class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage> {
                   padding: const EdgeInsets.all(12),
                   margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.1),
-                    border: Border.all(color: Colors.red),
+                    color: AppColors.error.withOpacity(0.1),
+                    border: Border.all(color: AppColors.error),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     state.error!,
-                    style: const TextStyle(color: Colors.red),
+                    style: const TextStyle(color: AppColors.error),
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -95,13 +100,13 @@ class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage> {
                   padding: const EdgeInsets.all(12),
                   margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.1),
-                    border: Border.all(color: Colors.green),
+                    color: AppColors.success.withOpacity(0.1),
+                    border: Border.all(color: AppColors.success),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     state.successMessage!,
-                    style: const TextStyle(color: Colors.green),
+                    style: const TextStyle(color: AppColors.success),
                     textAlign: TextAlign.center,
                   ),
                 ),

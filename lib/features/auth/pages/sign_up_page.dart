@@ -7,6 +7,7 @@ import 'package:job_finder_app/core/widgets/text_field.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../controllers/sign_up_controller.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:job_finder_app/core/theme/app_theme.dart';
 
 class SignUpPage extends ConsumerStatefulWidget {
   const SignUpPage({super.key});
@@ -86,7 +87,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
             const SizedBox(height: 8),
             const Text(
               "Join us and start your job search today!",
-              style: TextStyle(fontSize: 16, color: Colors.grey),
+              style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
             ),
             const SizedBox(height: 18),
             if (state.error != null)
@@ -95,13 +96,13 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                 padding: const EdgeInsets.all(12),
                 margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.1),
-                  border: Border.all(color: Colors.red),
+                  color: AppColors.error.withOpacity(0.1),
+                  border: Border.all(color: AppColors.error),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   state.error!,
-                  style: const TextStyle(color: Colors.red),
+                  style: const TextStyle(color: AppColors.error),
                   textAlign: TextAlign.center,
                 ),
               ),

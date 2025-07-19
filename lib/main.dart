@@ -64,7 +64,7 @@ class _MyAppState extends ConsumerState<MyApp> {
     return MaterialApp.router(
       title: 'Job Finder',
       debugShowCheckedModeBanner: false,
-      theme: AppColors.lightTheme,
+      theme: appLightTheme,
       routerConfig: AppRouter.router,
     );
   }
