@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:job_finder_app/core/utils/shared_prefs.dart';
+import 'package:job_finder_app/core/utils/error_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -19,9 +20,7 @@ class AuthService {
       final res = await _client.auth.signUp(
         email: email,
         password: password,
-        data: {
-          'display_name': fullName, // This sets metadata
-        },
+        data: {'display_name': fullName},
       );
 
       final user = res.user;
@@ -29,23 +28,21 @@ class AuthService {
         return 'Signup failed. User not created.';
       }
 
-      // Insert into 'profiles' table
       await _client.from('profiles').insert({
         'id': user.id,
         'full_name': fullName,
         'email': email,
       });
 
-      // Immediately sign the user out after signup
       await _client.auth.signOut();
 
       if (context.mounted) {
-        context.go('/login'); // Redirect to login page manually
+        context.go('/login');
       }
 
-      return null; // success
+      return null;
     } catch (e) {
-      return e.toString(); // return error message
+      return ErrorHandler.getUserFriendlyError(e.toString());
     }
   }
 
@@ -83,7 +80,6 @@ class AuthService {
       final email = user.email;
       if (email == null) return 'Email not found from provider.';
 
-      // Check if email already exists in the database
       final existingEmailCheck = await _client
           .from('profiles')
           .select('email')
@@ -91,16 +87,12 @@ class AuthService {
           .maybeSingle();
 
       if (existingEmailCheck != null) {
-        // Email already exists, sign out and redirect to login with error
         await _client.auth.signOut();
-
-        // Store error message for login page
         await SharedPrefs.setString(
           'loginError',
           'An account with this email already exists. Please sign in instead.',
         );
 
-        // Redirect to login page if context is provided
         if (context != null && context.mounted) {
           context.go('/login');
         }
@@ -108,7 +100,6 @@ class AuthService {
         return 'An account with this email already exists. Please sign in instead.';
       }
 
-      // Check if profile already exists for this user ID
       final response = await _client
           .from('profiles')
           .select()
@@ -130,14 +121,16 @@ class AuthService {
       onSuccess();
       return null;
     } on TimeoutException {
-      return 'Login cancelled or timed out.';
+      return ErrorHandler.getUserFriendlyError('Login cancelled or timed out.');
     } on AuthException catch (e) {
       if (e.message.contains('code verifier')) {
-        return 'OAuth failed — app may have been hot reloaded. Please restart and try again.';
+        return ErrorHandler.getUserFriendlyError(
+          'OAuth failed — app may have been hot reloaded. Please restart and try again.',
+        );
       }
-      return 'OAuth failed: ${e.message}';
+      return ErrorHandler.getUserFriendlyError('OAuth failed: ${e.message}');
     } catch (e) {
-      return 'Social signup failed: $e';
+      return ErrorHandler.getUserFriendlyError('Social signup failed: $e');
     } finally {
       await subscription.cancel();
     }
@@ -156,9 +149,11 @@ class AuthService {
       if (response.user == null) return "Sign in failed. Try again.";
       return null;
     } on AuthException catch (e) {
-      return e.message;
+      return ErrorHandler.getAuthError(e.message);
     } catch (_) {
-      return "Unexpected error. Please try again.";
+      return ErrorHandler.getUserFriendlyError(
+        "Unexpected error. Please try again.",
+      );
     }
   }
 
@@ -214,9 +209,9 @@ class AuthService {
 
       return null;
     } on TimeoutException {
-      return "Login timed out. Try again.";
+      return ErrorHandler.getNetworkError("Login timed out. Try again.");
     } catch (e) {
-      return "Social login failed: $e";
+      return ErrorHandler.getUserFriendlyError("Social login failed: $e");
     } finally {
       await subscription.cancel();
     }
