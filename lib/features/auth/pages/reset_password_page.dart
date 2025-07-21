@@ -55,7 +55,7 @@ class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage> {
           onPressed: () => context.go('/login'),
           icon: const Icon(Icons.arrow_back),
         ),
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppColors.transparent,
         elevation: 0,
       ),
       body: SafeArea(

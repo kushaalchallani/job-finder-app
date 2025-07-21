@@ -9,6 +9,7 @@ class AppColors {
   static const textSecondary = Colors.grey;
   static const border = Color(0xFFE0E0E0);
   static const textFieldFill = Color(0xFFF5F6FA);
+  static const transparent = Colors.transparent;
 }
 
 ThemeData get appLightTheme => ThemeData(
