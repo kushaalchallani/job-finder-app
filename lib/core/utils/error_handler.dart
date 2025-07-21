@@ -1,12 +1,11 @@
-// ignore_for_file: avoid_print
+import 'package:flutter/material.dart';
 
 class ErrorHandler {
-  /// Convert technical error messages to user-friendly messages
   static String getUserFriendlyError(String error) {
     final lowerError = error.toLowerCase();
 
-    print('DEBUG - Original error: $error');
-    print('DEBUG - Lowercase error: $lowerError');
+    debugPrint('DEBUG - Original error: $error');
+    debugPrint('DEBUG - Lowercase error: $lowerError');
 
     // Email-related errors
     if (lowerError.contains('invalid email') ||
@@ -27,6 +26,27 @@ class ErrorHandler {
     }
     if (lowerError.contains('password') && lowerError.contains('short')) {
       return 'Password is too short. Please use at least 6 characters.';
+    }
+    if (lowerError.contains('invalid login credentials') ||
+        lowerError.contains('invalid credentials') ||
+        lowerError.contains('invalid email or password')) {
+      return 'Invalid email or password. Please try again.';
+    }
+
+    if (lowerError.contains('no active session') ||
+        lowerError.contains('reset link')) {
+      return 'Your password reset link is invalid or has expired. Please request a new password reset email.';
+    }
+
+    if (lowerError.contains('password') && lowerError.contains('weak')) {
+      return 'Password is too weak. Please choose a stronger password.';
+    }
+    if (lowerError.contains('password') && lowerError.contains('short')) {
+      return 'Password is too short. Please use at least 6 characters.';
+    }
+    if (lowerError.contains('new password') &&
+        lowerError.contains('old password')) {
+      return 'New password must be different from the old password.';
     }
     if (lowerError.contains('invalid login credentials') ||
         lowerError.contains('invalid credentials') ||
@@ -80,6 +100,19 @@ class ErrorHandler {
     }
 
     // Supabase specific errors
+    if (lowerError.contains('supabase')) {
+      return 'Service error. Please try again later.';
+    }
+    if (lowerError.contains('auth') && lowerError.contains('failed')) {
+      return 'Authentication failed. Please try again.';
+    }
+    if (lowerError.contains('user not found')) {
+      return 'No account found with this email. Please sign up first.';
+    }
+    if (lowerError.contains('too many requests') ||
+        lowerError.contains('rate limit')) {
+      return 'Too many attempts. Please wait a moment and try again.';
+    }
     if (lowerError.contains('supabase')) {
       return 'Service error. Please try again later.';
     }

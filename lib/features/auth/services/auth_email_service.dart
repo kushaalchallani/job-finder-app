@@ -7,7 +7,6 @@ class AuthEmailService {
   static final _client = Supabase.instance.client;
 
   /// Sign up with email, password, and full name
-  /// Sign up with email, password, and full name
   static Future<bool> signUpWithEmail({
     required String email,
     required String password,
@@ -149,6 +148,8 @@ class AuthEmailService {
       }
 
       await _client.auth.updateUser(UserAttributes(password: newPassword));
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('flashMessage', 'password_reset_success');
 
       await _client.auth.signOut();
     } on AuthException catch (e) {

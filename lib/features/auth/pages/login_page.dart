@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:job_finder_app/core/widgets/flash_banner.dart';
@@ -42,6 +43,18 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             );
         await prefs.remove('flashMessage');
       }
+
+      if (flash == 'password_reset_success') {
+        ref
+            .read(flashMessageQueueProvider)
+            .enqueue(
+              FlashMessage(
+                text: 'Password updated successfully. Please login.',
+                color: AppColors.success,
+              ),
+            );
+        await prefs.remove('flashMessage');
+      }
     });
   }
 
@@ -75,7 +88,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final success = await ref
         .read(loginControllerProvider.notifier)
         .signInWithSocial(provider: provider, context: context);
-    if (!mounted) return; // Add this guard!
+    if (!mounted) return;
     if (success) {
       context.go('/home');
     } else {

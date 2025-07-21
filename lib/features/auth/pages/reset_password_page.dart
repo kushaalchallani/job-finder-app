@@ -44,16 +44,17 @@ class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage> {
         );
 
     final state = ref.read(resetPasswordControllerProvider);
-    if (state.successMessage != null) {
-      ref
-          .read(flashMessageQueueProvider)
-          .enqueue(
-            FlashMessage(text: state.successMessage!, color: AppColors.success),
-          );
-    } else if (state.error != null) {
+
+    // Display only error globally
+    if (state.error != null) {
       ref
           .read(flashMessageQueueProvider)
           .enqueue(FlashMessage(text: state.error!, color: AppColors.error));
+    }
+
+    // ✅ Navigate away silently on success
+    if (state.successMessage != null && mounted) {
+      context.go('/login');
     }
   }
 
