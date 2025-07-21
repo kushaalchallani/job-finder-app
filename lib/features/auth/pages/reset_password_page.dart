@@ -1,11 +1,13 @@
 // ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:job_finder_app/core/widgets/button.dart';
-import 'package:job_finder_app/core/widgets/text_field.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:job_finder_app/core/widgets/button.dart';
+import 'package:job_finder_app/core/widgets/flash_banner.dart';
+import 'package:job_finder_app/core/widgets/text_field.dart';
 import '../controllers/reset_password_controller.dart';
 import 'package:job_finder_app/core/theme/app_theme.dart';
+import 'package:job_finder_app/core/utils/flash_message_queue.dart';
 
 class ResetPasswordPage extends ConsumerStatefulWidget {
   const ResetPasswordPage({super.key});
@@ -21,9 +23,9 @@ class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(
-      () => ref.read(resetPasswordControllerProvider.notifier).clearError(),
-    );
+    Future.microtask(() {
+      ref.read(resetPasswordControllerProvider.notifier).clearError();
+    });
   }
 
   @override
@@ -40,11 +42,25 @@ class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage> {
           _passwordController.text,
           _confirmPasswordController.text,
         );
+
+    final state = ref.read(resetPasswordControllerProvider);
+    if (state.successMessage != null) {
+      ref
+          .read(flashMessageQueueProvider)
+          .enqueue(
+            FlashMessage(text: state.successMessage!, color: AppColors.success),
+          );
+    } else if (state.error != null) {
+      ref
+          .read(flashMessageQueueProvider)
+          .enqueue(FlashMessage(text: state.error!, color: AppColors.error));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(resetPasswordControllerProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -64,6 +80,8 @@ class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const FlashBanner(),
+
               const Text(
                 "Set new password",
                 style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
@@ -78,38 +96,7 @@ class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage> {
                 ),
               ),
               const SizedBox(height: 32),
-              if (state.error != null)
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    color: AppColors.error.withOpacity(0.1),
-                    border: Border.all(color: AppColors.error),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    state.error!,
-                    style: const TextStyle(color: AppColors.error),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              if (state.successMessage != null)
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    color: AppColors.success.withOpacity(0.1),
-                    border: Border.all(color: AppColors.success),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    state.successMessage!,
-                    style: const TextStyle(color: AppColors.success),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
+
               AuthTextField(
                 controller: _passwordController,
                 label: "New Password",

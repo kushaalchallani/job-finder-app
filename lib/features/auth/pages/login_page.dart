@@ -1,15 +1,14 @@
-// ignore_for_file: deprecated_member_use
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:job_finder_app/core/utils/shared_prefs.dart';
+import 'package:job_finder_app/core/widgets/flash_banner.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../controllers/login_controller.dart';
 import 'package:job_finder_app/core/widgets/button.dart';
 import 'package:job_finder_app/core/widgets/text_field.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../controllers/login_controller.dart';
 import 'package:job_finder_app/core/theme/app_theme.dart';
+import 'package:job_finder_app/core/utils/flash_message_queue.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   final String? errorMessage;
@@ -22,12 +21,10 @@ class LoginPage extends ConsumerStatefulWidget {
 class _LoginPageState extends ConsumerState<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _showSignupSuccess = false;
 
   @override
   void initState() {
     super.initState();
-
     Future.microtask(() async {
       ref.read(loginControllerProvider.notifier).clearError();
 
@@ -35,14 +32,17 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       final flash = prefs.getString('flashMessage');
 
       if (flash == 'signup_success') {
-        setState(() {
-          _showSignupSuccess = true;
-        });
+        ref
+            .read(flashMessageQueueProvider)
+            .enqueue(
+              FlashMessage(
+                text: 'Signup successful! Please login to continue.',
+                color: AppColors.success,
+              ),
+            );
         await prefs.remove('flashMessage');
       }
     });
-
-    SharedPrefs.getString('flashMessage');
   }
 
   @override
@@ -61,6 +61,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         );
     if (success && mounted) {
       context.go('/home');
+    } else {
+      final error = ref.read(loginControllerProvider).error;
+      if (error != null) {
+        ref
+            .read(flashMessageQueueProvider)
+            .enqueue(FlashMessage(text: error, color: AppColors.error));
+      }
     }
   }
 
@@ -68,14 +75,23 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final success = await ref
         .read(loginControllerProvider.notifier)
         .signInWithSocial(provider: provider, context: context);
-    if (success && mounted) {
+    if (!mounted) return; // Add this guard!
+    if (success) {
       context.go('/home');
+    } else {
+      final error = ref.read(loginControllerProvider).error;
+      if (error != null) {
+        ref
+            .read(flashMessageQueueProvider)
+            .enqueue(FlashMessage(text: error, color: AppColors.error));
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(loginControllerProvider);
+
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -93,39 +109,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
               ),
               const SizedBox(height: 18),
-              if (_showSignupSuccess)
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    color: AppColors.success.withOpacity(0.13),
-                    border: Border.all(color: AppColors.success),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Text(
-                    'Signup successful! Please login to continue.',
-                    style: TextStyle(color: AppColors.success),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
 
-              if (state.error != null)
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    color: AppColors.error.withOpacity(0.1),
-                    border: Border.all(color: AppColors.error),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    state.error!,
-                    style: const TextStyle(color: AppColors.error),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
+              const FlashBanner(),
+
               AuthTextField(
                 controller: _emailController,
                 label: "Email",

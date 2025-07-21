@@ -3,11 +3,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:job_finder_app/core/widgets/button.dart';
+import 'package:job_finder_app/core/widgets/flash_banner.dart';
 import 'package:job_finder_app/core/widgets/text_field.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../controllers/sign_up_controller.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:job_finder_app/core/theme/app_theme.dart';
+import 'package:job_finder_app/core/utils/flash_message_queue.dart';
 
 class SignUpPage extends ConsumerStatefulWidget {
   const SignUpPage({super.key});
@@ -25,9 +27,9 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(
-      () => ref.read(signUpControllerProvider.notifier).clearError(),
-    );
+    Future.microtask(() {
+      ref.read(signUpControllerProvider.notifier).clearError();
+    });
   }
 
   @override
@@ -48,6 +50,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
       ref
           .read(signUpControllerProvider.notifier)
           .setError("Please fill out all fields.");
+      _showError();
       return;
     }
 
@@ -56,6 +59,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
       ref
           .read(signUpControllerProvider.notifier)
           .setError("Passwords do not match");
+      _showError();
       return;
     }
 
@@ -70,6 +74,17 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
 
     if (success && mounted) {
       context.go('/login');
+    } else {
+      _showError();
+    }
+  }
+
+  void _showError() {
+    final error = ref.read(signUpControllerProvider).error;
+    if (error != null) {
+      ref
+          .read(flashMessageQueueProvider)
+          .enqueue(FlashMessage(text: error, color: AppColors.error));
     }
   }
 
@@ -84,11 +99,19 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
             context.go('/login');
           },
         );
+
+    final error = ref.read(signUpControllerProvider).error;
+    if (error != null && mounted) {
+      ref
+          .read(flashMessageQueueProvider)
+          .enqueue(FlashMessage(text: error, color: AppColors.error));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(signUpControllerProvider);
+
     return Scaffold(
       body: SafeArea(
         child: ListView(
@@ -105,22 +128,9 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
               style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
             ),
             const SizedBox(height: 18),
-            if (state.error != null)
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: AppColors.error.withOpacity(0.1),
-                  border: Border.all(color: AppColors.error),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  state.error!,
-                  style: const TextStyle(color: AppColors.error),
-                  textAlign: TextAlign.center,
-                ),
-              ),
+
+            const FlashBanner(),
+
             AuthTextField(controller: _nameController, label: "Full Name"),
             const SizedBox(height: 16),
             AuthTextField(
@@ -141,12 +151,14 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
               obscureText: true,
             ),
             const SizedBox(height: 16),
+
             PrimaryButton(
               text: "Sign Up",
               isLoading: state.isLoading,
               onPressed: _handleSignUp,
             ),
             const SizedBox(height: 24),
+
             Row(
               children: const [
                 Expanded(child: Divider(thickness: 1)),
@@ -158,6 +170,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
               ],
             ),
             const SizedBox(height: 16),
+
             state.isSocialLoading
                 ? const Center(child: CircularProgressIndicator())
                 : Row(

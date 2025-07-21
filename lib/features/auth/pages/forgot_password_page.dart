@@ -1,11 +1,13 @@
 // ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:job_finder_app/core/widgets/button.dart';
-import 'package:job_finder_app/core/widgets/text_field.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:job_finder_app/core/widgets/button.dart';
+import 'package:job_finder_app/core/widgets/flash_banner.dart';
+import 'package:job_finder_app/core/widgets/text_field.dart';
 import '../controllers/forgot_password_controller.dart';
 import 'package:job_finder_app/core/theme/app_theme.dart';
+import 'package:job_finder_app/core/utils/flash_message_queue.dart';
 
 class ForgotPasswordPage extends ConsumerStatefulWidget {
   const ForgotPasswordPage({super.key});
@@ -35,11 +37,25 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
     await ref
         .read(forgotPasswordControllerProvider.notifier)
         .sendResetLink(_emailController.text.trim());
+
+    final state = ref.read(forgotPasswordControllerProvider);
+    if (state.successMessage != null) {
+      ref
+          .read(flashMessageQueueProvider)
+          .enqueue(
+            FlashMessage(text: state.successMessage!, color: AppColors.success),
+          );
+    } else if (state.error != null) {
+      ref
+          .read(flashMessageQueueProvider)
+          .enqueue(FlashMessage(text: state.error!, color: AppColors.error));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(forgotPasswordControllerProvider);
+
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -47,7 +63,8 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Back arrow and title
+              const FlashBanner(),
+
               Row(
                 children: [
                   IconButton(
@@ -78,44 +95,14 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                 ),
               ),
               const SizedBox(height: 32),
-              if (state.error != null)
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    color: AppColors.error.withOpacity(0.1),
-                    border: Border.all(color: AppColors.error),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    state.error!,
-                    style: const TextStyle(color: AppColors.error),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              if (state.successMessage != null)
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    color: AppColors.success.withOpacity(0.1),
-                    border: Border.all(color: AppColors.success),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    state.successMessage!,
-                    style: const TextStyle(color: AppColors.success),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
+
               AuthTextField(
                 controller: _emailController,
                 label: "Email",
                 keyboardType: TextInputType.emailAddress,
               ),
               const SizedBox(height: 32),
+
               PrimaryButton(
                 text: "Send Reset Link",
                 isLoading: state.isLoading,
