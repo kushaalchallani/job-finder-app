@@ -75,7 +75,6 @@ class ResetPasswordController extends StateNotifier<ResetPasswordState> {
 }
 
 final resetPasswordControllerProvider =
-    StateNotifierProvider.autoDispose<
-      ResetPasswordController,
-      ResetPasswordState
-    >((ref) => ResetPasswordController());
+    StateNotifierProvider<ResetPasswordController, ResetPasswordState>(
+      (ref) => ResetPasswordController(),
+    );

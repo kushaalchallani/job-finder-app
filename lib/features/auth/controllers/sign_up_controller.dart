@@ -72,6 +72,6 @@ class SignUpController extends StateNotifier<SignUpState> {
 }
 
 final signUpControllerProvider =
-    StateNotifierProvider.autoDispose<SignUpController, SignUpState>(
+    StateNotifierProvider<SignUpController, SignUpState>(
       (ref) => SignUpController(),
     );

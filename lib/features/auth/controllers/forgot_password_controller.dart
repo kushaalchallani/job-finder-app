@@ -61,7 +61,6 @@ class ForgotPasswordController extends StateNotifier<ForgotPasswordState> {
 }
 
 final forgotPasswordControllerProvider =
-    StateNotifierProvider.autoDispose<
-      ForgotPasswordController,
-      ForgotPasswordState
-    >((ref) => ForgotPasswordController());
+    StateNotifierProvider<ForgotPasswordController, ForgotPasswordState>(
+      (ref) => ForgotPasswordController(),
+    );

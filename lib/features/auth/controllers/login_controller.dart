@@ -25,11 +25,11 @@ class LoginState {
 
 class LoginController extends StateNotifier<LoginState> {
   LoginController() : super(const LoginState()) {
-    print('LoginController created');
+    // print('LoginController created');
   }
   @override
   void dispose() {
-    print('LoginController disposed');
+    // print('LoginController disposed');
     super.dispose();
   }
 
@@ -65,6 +65,6 @@ class LoginController extends StateNotifier<LoginState> {
 }
 
 final loginControllerProvider =
-    StateNotifierProvider.autoDispose<LoginController, LoginState>(
+    StateNotifierProvider<LoginController, LoginState>(
       (ref) => LoginController(),
     );
