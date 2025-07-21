@@ -63,8 +63,6 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const FlashBanner(),
-
               Row(
                 children: [
                   IconButton(
@@ -95,7 +93,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                 ),
               ),
               const SizedBox(height: 32),
-
+              const FlashBanner(),
               AuthTextField(
                 controller: _emailController,
                 label: "Email",

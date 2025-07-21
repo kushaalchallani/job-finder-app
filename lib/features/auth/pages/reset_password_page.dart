@@ -62,25 +62,27 @@ class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage> {
     final state = ref.watch(resetPasswordControllerProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          "Reset Password",
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-        leading: IconButton(
-          onPressed: () => context.go('/login'),
-          icon: const Icon(Icons.arrow_back),
-        ),
-        backgroundColor: AppColors.transparent,
-        elevation: 0,
-      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const FlashBanner(),
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: () => context.push('/forgot-password'),
+                    icon: const Icon(Icons.arrow_back),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                  const SizedBox(width: 16),
+                  const Text(
+                    "Forgot Password",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
 
               const Text(
                 "Set new password",
@@ -95,6 +97,7 @@ class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage> {
                   height: 1.5,
                 ),
               ),
+              const FlashBanner(),
               const SizedBox(height: 32),
 
               AuthTextField(
