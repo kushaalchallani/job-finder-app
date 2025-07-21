@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: avoid_print, deprecated_member_use
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -40,6 +40,17 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
   }
 
   Future<void> _handleSignUp() async {
+    if (_nameController.text.trim().isEmpty ||
+        _emailController.text.trim().isEmpty ||
+        _passwordController.text.isEmpty ||
+        _confirmPasswordController.text.isEmpty) {
+      ref.read(signUpControllerProvider.notifier).clearError();
+      ref
+          .read(signUpControllerProvider.notifier)
+          .setError("Please fill out all fields.");
+      return;
+    }
+
     if (_passwordController.text != _confirmPasswordController.text) {
       ref.read(signUpControllerProvider.notifier).clearError();
       ref
@@ -47,7 +58,8 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
           .setError("Passwords do not match");
       return;
     }
-    await ref
+
+    final success = await ref
         .read(signUpControllerProvider.notifier)
         .signUpWithEmail(
           fullName: _nameController.text.trim(),
@@ -55,6 +67,10 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
           password: _passwordController.text,
           context: context,
         );
+
+    if (success && mounted) {
+      context.go('/login');
+    }
   }
 
   Future<void> _handleSocialSignUp(OAuthProvider provider) async {
@@ -63,10 +79,9 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
         .socialSignUp(
           provider: provider,
           context: context,
-          onSuccess: () {
-            if (context.mounted) {
-              context.go('/login');
-            }
+          onSuccess: () async {
+            if (!mounted) return;
+            context.go('/login');
           },
         );
   }

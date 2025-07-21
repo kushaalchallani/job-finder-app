@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:job_finder_app/core/utils/error_handler.dart';
 import 'package:job_finder_app/core/utils/shared_prefs.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthSocialService {
@@ -79,6 +80,9 @@ class AuthSocialService {
           'sign_up_method': provider.name,
         });
       }
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('flashMessage', 'signup_success');
 
       await _client.auth.signOut();
       onSuccess();

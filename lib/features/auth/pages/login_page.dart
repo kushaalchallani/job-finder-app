@@ -1,7 +1,11 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:job_finder_app/core/utils/shared_prefs.dart';
 import 'package:job_finder_app/core/widgets/button.dart';
 import 'package:job_finder_app/core/widgets/text_field.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../controllers/login_controller.dart';
@@ -18,13 +22,27 @@ class LoginPage extends ConsumerStatefulWidget {
 class _LoginPageState extends ConsumerState<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _showSignupSuccess = false;
 
   @override
   void initState() {
     super.initState();
-    Future.microtask(
-      () => ref.read(loginControllerProvider.notifier).clearError(),
-    );
+
+    Future.microtask(() async {
+      ref.read(loginControllerProvider.notifier).clearError();
+
+      final prefs = await SharedPreferences.getInstance();
+      final flash = prefs.getString('flashMessage');
+
+      if (flash == 'signup_success') {
+        setState(() {
+          _showSignupSuccess = true;
+        });
+        await prefs.remove('flashMessage');
+      }
+    });
+
+    SharedPrefs.getString('flashMessage');
   }
 
   @override
@@ -75,6 +93,23 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
               ),
               const SizedBox(height: 18),
+              if (_showSignupSuccess)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: AppColors.success.withOpacity(0.13),
+                    border: Border.all(color: AppColors.success),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text(
+                    'Signup successful! Please login to continue.',
+                    style: TextStyle(color: AppColors.success),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+
               if (state.error != null)
                 Container(
                   width: double.infinity,

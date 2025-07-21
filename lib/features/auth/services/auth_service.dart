@@ -5,17 +5,15 @@ import 'package:job_finder_app/features/auth/services/auth_social_service.dart';
 import 'package:job_finder_app/features/auth/services/auth_utils.dart';
 
 class AuthService {
-  // Email/password
-  static Future<String?> signUpWithEmail({
+  // ✅ Email/password
+  static Future<bool> signUpWithEmail({
     required String email,
     required String password,
     required String fullName,
-    required BuildContext context,
   }) => AuthEmailService.signUpWithEmail(
     email: email,
     password: password,
     fullName: fullName,
-    context: context,
   );
 
   static Future<String?> signInWithEmail({
@@ -33,7 +31,6 @@ class AuthService {
   static Future<void> updatePassword({required String newPassword}) =>
       AuthEmailService.updatePassword(newPassword: newPassword);
 
-  // Social
   static Future<String?> socialSignUp({
     required OAuthProvider provider,
     required VoidCallback onSuccess,

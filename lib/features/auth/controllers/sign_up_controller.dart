@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:job_finder_app/features/auth/services/auth_email_service.dart';
 import 'package:job_finder_app/features/auth/services/auth_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/material.dart';
@@ -37,14 +38,20 @@ class SignUpController extends StateNotifier<SignUpState> {
     required BuildContext context,
   }) async {
     state = state.copyWith(isLoading: true, error: null);
-    final error = await AuthService.signUpWithEmail(
+    final success = await AuthEmailService.signUpWithEmail(
       fullName: fullName,
       email: email,
       password: password,
-      context: context,
     );
-    state = state.copyWith(isLoading: false, error: error);
-    return error == null;
+    state = state.copyWith(isLoading: false);
+
+    if (!success) {
+      setError("Signup failed. Please check your details and try again.");
+      return false;
+    }
+
+    clearError();
+    return true;
   }
 
   Future<bool> socialSignUp({

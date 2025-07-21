@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:job_finder_app/core/utils/error_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthEmailService {
   static final _client = Supabase.instance.client;
 
   /// Sign up with email, password, and full name
-  static Future<String?> signUpWithEmail({
+  /// Sign up with email, password, and full name
+  static Future<bool> signUpWithEmail({
     required String email,
     required String password,
     required String fullName,
-    required BuildContext context,
   }) async {
     try {
       final res = await _client.auth.signUp(
@@ -22,9 +22,10 @@ class AuthEmailService {
 
       final user = res.user;
       if (user == null) {
-        return 'Signup failed. User not created.';
+        return false;
       }
 
+      // Insert into profiles table
       await _client.from('profiles').insert({
         'id': user.id,
         'full_name': fullName,
@@ -32,15 +33,15 @@ class AuthEmailService {
         'sign_up_method': 'email',
       });
 
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('flashMessage', 'signup_success');
+
       await _client.auth.signOut();
 
-      if (context.mounted) {
-        context.go('/login');
-      }
-
-      return null;
+      return true;
     } catch (e) {
-      return ErrorHandler.getUserFriendlyError(e.toString());
+      debugPrint("Signup error: $e");
+      return false;
     }
   }
 
