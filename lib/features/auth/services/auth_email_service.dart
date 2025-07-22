@@ -6,11 +6,13 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class AuthEmailService {
   static final _client = Supabase.instance.client;
 
-  /// Sign up with email, password, and full name
+  //signup with email
   static Future<bool> signUpWithEmail({
     required String email,
     required String password,
     required String fullName,
+    required String role,
+    String? company,
   }) async {
     try {
       final res = await _client.auth.signUp(
@@ -24,19 +26,23 @@ class AuthEmailService {
         return false;
       }
 
-      // Insert into profiles table
-      await _client.from('profiles').insert({
+      final profileData = {
         'id': user.id,
         'full_name': fullName,
         'email': email,
+        'role': role,
         'sign_up_method': 'email',
-      });
+      };
+      if (company != null) {
+        profileData['company'] = company;
+      }
+
+      await _client.from('profiles').insert(profileData);
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('flashMessage', 'signup_success');
 
       await _client.auth.signOut();
-
       return true;
     } catch (e) {
       debugPrint("Signup error: $e");
@@ -65,7 +71,7 @@ class AuthEmailService {
     }
   }
 
-  /// Check if user exists and can reset password (strict: only email signups)
+  /// Strict check: only allow reset for email/password accounts
   static Future<Map<String, dynamic>> checkPasswordResetEligibility({
     required String email,
   }) async {
@@ -93,31 +99,29 @@ class AuthEmailService {
         };
       }
 
-      try {
-        await _client.auth.resetPasswordForEmail(
-          email,
-          redirectTo: 'jobfinder://reset-password',
-        );
+      await _client.auth.resetPasswordForEmail(
+        email,
+        redirectTo: 'jobfinder://reset-password',
+      );
+      return {
+        'exists': true,
+        'canReset': true,
+        'message': 'Password reset link sent to your email!',
+      };
+    } on AuthException catch (e) {
+      if (e.message.contains('Email not confirmed')) {
         return {
           'exists': true,
-          'canReset': true,
-          'message': 'Password reset link sent to your email!',
+          'canReset': false,
+          'message':
+              'Please confirm your email before resetting your password.',
         };
-      } on AuthException catch (e) {
-        if (e.message.contains('Email not confirmed')) {
-          return {
-            'exists': true,
-            'canReset': false,
-            'message':
-                'Please confirm your email address before resetting your password.',
-          };
-        } else {
-          return {
-            'exists': true,
-            'canReset': false,
-            'message': ErrorHandler.getAuthError(e.message),
-          };
-        }
+      } else {
+        return {
+          'exists': true,
+          'canReset': false,
+          'message': ErrorHandler.getAuthError(e.message),
+        };
       }
     } catch (e) {
       return {
@@ -128,29 +132,25 @@ class AuthEmailService {
     }
   }
 
-  /// Reset password by sending reset email
+  /// Reset password backend trigger
   static Future<void> resetPassword({required String email}) async {
     final result = await checkPasswordResetEligibility(email: email);
-
     if (!result['canReset']) {
       throw Exception(result['message']);
     }
   }
 
-  /// Update password after reset
+  /// Update password (after reset)
   static Future<void> updatePassword({required String newPassword}) async {
     try {
       final session = _client.auth.currentSession;
       if (session == null) {
-        throw Exception(
-          'No active session. Please click the reset link in your email again.',
-        );
+        throw Exception('No active session. Try using the link again.');
       }
 
       await _client.auth.updateUser(UserAttributes(password: newPassword));
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('flashMessage', 'password_reset_success');
-
       await _client.auth.signOut();
     } on AuthException catch (e) {
       throw Exception(ErrorHandler.getAuthError(e.message));

@@ -70,6 +70,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
           email: _emailController.text.trim(),
           password: _passwordController.text,
           context: context,
+          role: 'job_seeker',
         );
 
     if (success && mounted) {
@@ -119,17 +120,49 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
         child: ListView(
           padding: const EdgeInsets.all(24),
           children: [
-            const SizedBox(height: 18),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 18),
+              margin: const EdgeInsets.only(bottom: 10),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.08),
+                border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(12),
+                  bottomRight: Radius.circular(12),
+                ),
+              ),
+              child: GestureDetector(
+                onTap: () => context.push('/recruiter-signup'),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.business_center_outlined,
+                      color: AppColors.primary,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      "Recruiter? Create your account →",
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
             const Text(
               "Create Account",
               style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 8),
             const Text(
               "Join us and start your job search today!",
               style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 10),
 
             const FlashBanner(),
 
@@ -159,8 +192,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
               isLoading: state.isLoading,
               onPressed: _handleSignUp,
             ),
-            const SizedBox(height: 24),
-
+            const SizedBox(height: 16),
             Row(
               children: const [
                 Expanded(child: Divider(thickness: 1)),
@@ -171,7 +203,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                 Expanded(child: Divider(thickness: 1)),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 10),
 
             state.isSocialLoading
                 ? const Center(child: CircularProgressIndicator())
@@ -197,11 +229,10 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                       ),
                     ],
                   ),
-            const SizedBox(height: 18),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text("Already have an account? "),
+                const Text("Already have an account?"),
                 TextButton(
                   onPressed: () => context.go('/login'),
                   child: const Text("Login"),

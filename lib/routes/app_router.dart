@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:job_finder_app/features/auth/pages/recruiter_sign_up_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../features/auth/pages/splash_page.dart';
 import '../features/auth/pages/sign_up_page.dart';
@@ -66,6 +67,11 @@ class AppRouter {
         path: '/reset-password',
         name: 'reset-password',
         builder: (context, state) => const ResetPasswordPage(),
+      ),
+      GoRoute(
+        path: '/recruiter-signup',
+        name: 'recruiter-signup',
+        builder: (context, state) => const RecruiterSignUpPage(),
       ),
     ],
     redirect: (context, state) {

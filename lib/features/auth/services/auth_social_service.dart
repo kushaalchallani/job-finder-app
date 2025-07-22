@@ -43,7 +43,6 @@ class AuthSocialService {
       final email = user.email;
       if (email == null) return 'Email not found from provider.';
 
-      // ✅ NEW: Check if someone already has this email in "profiles"
       final existingUserWithEmail = await _client
           .from('profiles')
           .select('id')
@@ -53,7 +52,6 @@ class AuthSocialService {
       if (existingUserWithEmail != null) {
         await _client.auth.signOut();
 
-        // ✅ Save flash message to show it on LoginPage
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('flashMessage', 'social_signup_email_exists');
 
@@ -64,7 +62,6 @@ class AuthSocialService {
         return 'An account with this email already exists. Please log in instead.';
       }
 
-      // ✅ Continue normal signup if no email found in profiles table
       final profile = await _client
           .from('profiles')
           .select()
@@ -80,6 +77,7 @@ class AuthSocialService {
               user.userMetadata?['name'] ??
               'User',
           'sign_up_method': provider.name,
+          'role': 'job_seeker',
         });
       }
 
@@ -136,8 +134,9 @@ class AuthSocialService {
       if (user == null) throw Exception("No user returned");
 
       final email = user.email;
-      if (email == null)
+      if (email == null) {
         throw Exception("OAuth provider did not return an email");
+      }
 
       // 🔒 Check if the email exists in profiles
       final existing = await _client
@@ -151,7 +150,6 @@ class AuthSocialService {
             ?.toLowerCase();
         final currentMethod = provider.name.toLowerCase();
 
-        // ❌ Prevent OAuth login if the email was created using email/password
         if (existingMethod == 'email' && currentMethod != 'email') {
           await _client.auth.signOut();
 
@@ -168,7 +166,6 @@ class AuthSocialService {
           return 'This email is registered with email/password. Please log in using those credentials.';
         }
 
-        // ❌ (Optional) Block mismatched social providers too
         if (existingMethod != currentMethod) {
           await _client.auth.signOut();
 

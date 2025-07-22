@@ -35,6 +35,7 @@ class SignUpController extends StateNotifier<SignUpState> {
     required String fullName,
     required String email,
     required String password,
+    required String role,
     required BuildContext context,
   }) async {
     state = state.copyWith(isLoading: true, error: null);
@@ -42,6 +43,7 @@ class SignUpController extends StateNotifier<SignUpState> {
       fullName: fullName,
       email: email,
       password: password,
+      role: role,
     );
     state = state.copyWith(isLoading: false);
 
