@@ -1,8 +1,8 @@
 // ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:job_finder_app/core/services/flash_message_handler.dart';
 import 'package:job_finder_app/core/widgets/flash_banner.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../controllers/login_controller.dart';
@@ -28,33 +28,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     super.initState();
     Future.microtask(() async {
       ref.read(loginControllerProvider.notifier).clearError();
-
-      final prefs = await SharedPreferences.getInstance();
-      final flash = prefs.getString('flashMessage');
-
-      if (flash == 'signup_success') {
-        ref
-            .read(flashMessageQueueProvider)
-            .enqueue(
-              FlashMessage(
-                text: 'Signup successful! Please login to continue.',
-                color: AppColors.success,
-              ),
-            );
-        await prefs.remove('flashMessage');
-      }
-
-      if (flash == 'password_reset_success') {
-        ref
-            .read(flashMessageQueueProvider)
-            .enqueue(
-              FlashMessage(
-                text: 'Password updated successfully. Please login.',
-                color: AppColors.success,
-              ),
-            );
-        await prefs.remove('flashMessage');
-      }
+      await handleFlashMessageFromPrefs(ref);
     });
   }
 

@@ -80,6 +80,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
   }
 
   void _showError() {
+    if (!mounted) return;
     final error = ref.read(signUpControllerProvider).error;
     if (error != null) {
       ref
@@ -99,6 +100,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
             context.go('/login');
           },
         );
+    if (!mounted) return;
 
     final error = ref.read(signUpControllerProvider).error;
     if (error != null && mounted) {

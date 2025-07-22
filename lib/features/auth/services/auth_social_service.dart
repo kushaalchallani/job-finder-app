@@ -43,33 +43,35 @@ class AuthSocialService {
       final email = user.email;
       if (email == null) return 'Email not found from provider.';
 
-      final existingEmailCheck = await _client
+      // ✅ NEW: Check if someone already has this email in "profiles"
+      final existingUserWithEmail = await _client
           .from('profiles')
-          .select('email')
+          .select('id')
           .eq('email', email)
           .maybeSingle();
 
-      if (existingEmailCheck != null) {
+      if (existingUserWithEmail != null) {
         await _client.auth.signOut();
-        await SharedPrefs.setString(
-          'loginError',
-          'An account with this email already exists. Please sign in instead.',
-        );
+
+        // ✅ Save flash message to show it on LoginPage
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('flashMessage', 'social_signup_email_exists');
 
         if (context != null && context.mounted) {
           context.go('/login');
         }
 
-        return 'An account with this email already exists. Please sign in instead.';
+        return 'An account with this email already exists. Please log in instead.';
       }
 
-      final response = await _client
+      // ✅ Continue normal signup if no email found in profiles table
+      final profile = await _client
           .from('profiles')
           .select()
           .eq('id', user.id)
           .maybeSingle();
 
-      if (response == null) {
+      if (profile == null) {
         await _client.from('profiles').insert({
           'id': user.id,
           'email': email,
@@ -88,14 +90,10 @@ class AuthSocialService {
       onSuccess();
       return null;
     } on AuthException catch (e) {
-      if (e.message.contains('code verifier')) {
-        await _client.auth.signOut();
-        return null;
-      }
+      await _client.auth.signOut();
       if (e.message.contains('code verifier') ||
           e.message.contains('flow state') ||
           e.message.contains('flow_state_not_found')) {
-        await _client.auth.signOut();
         return ErrorHandler.getUserFriendlyError(
           'OAuth session expired. Please try again.',
         );
@@ -114,7 +112,6 @@ class AuthSocialService {
     required BuildContext context,
   }) async {
     late final StreamSubscription<AuthState> subscription;
-
     final completer = Completer<AuthState>();
 
     subscription = _client.auth.onAuthStateChange.listen((data) {
@@ -138,6 +135,57 @@ class AuthSocialService {
       final user = data.session?.user;
       if (user == null) throw Exception("No user returned");
 
+      final email = user.email;
+      if (email == null)
+        throw Exception("OAuth provider did not return an email");
+
+      // 🔒 Check if the email exists in profiles
+      final existing = await _client
+          .from('profiles')
+          .select('sign_up_method')
+          .eq('email', email)
+          .maybeSingle();
+
+      if (existing != null) {
+        final existingMethod = (existing['sign_up_method'] as String?)
+            ?.toLowerCase();
+        final currentMethod = provider.name.toLowerCase();
+
+        // ❌ Prevent OAuth login if the email was created using email/password
+        if (existingMethod == 'email' && currentMethod != 'email') {
+          await _client.auth.signOut();
+
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString(
+            'flashMessage',
+            'social_login_blocked_email_signup',
+          );
+
+          if (context.mounted) {
+            context.go('/login');
+          }
+
+          return 'This email is registered with email/password. Please log in using those credentials.';
+        }
+
+        // ❌ (Optional) Block mismatched social providers too
+        if (existingMethod != currentMethod) {
+          await _client.auth.signOut();
+
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString(
+            'flashMessage',
+            'social_login_blocked_conflict',
+          );
+
+          if (context.mounted) {
+            context.go('/login');
+          }
+
+          return 'This account was registered using a different provider ($existingMethod). Please log in accordingly.';
+        }
+      }
+
       final profile = await _client
           .from('profiles')
           .select()
@@ -150,8 +198,8 @@ class AuthSocialService {
           'loginError',
           'Please sign up before logging in.',
         );
-        // ignore: use_build_context_synchronously
-        context.go('/login');
+        if (context.mounted) context.go('/login');
+        return 'Please sign up before logging in.';
       }
 
       if (context.mounted) {
@@ -162,10 +210,10 @@ class AuthSocialService {
     } on TimeoutException {
       return ErrorHandler.getNetworkError("Login timed out. Try again.");
     } on AuthException catch (e) {
+      await _client.auth.signOut();
       if (e.message.contains('code verifier') ||
           e.message.contains('flow state') ||
           e.message.contains('flow_state_not_found')) {
-        await _client.auth.signOut();
         return ErrorHandler.getUserFriendlyError(
           'OAuth session expired. Please try again.',
         );
