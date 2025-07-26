@@ -6,7 +6,7 @@ import 'package:job_finder_app/core/widgets/button.dart';
 import 'package:job_finder_app/core/widgets/flash_banner.dart';
 import 'package:job_finder_app/core/widgets/text_field.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../controllers/sign_up_controller.dart';
+import '../../controllers/sign_up_controller.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:job_finder_app/core/theme/app_theme.dart';
 import 'package:job_finder_app/core/utils/flash_message_queue.dart';

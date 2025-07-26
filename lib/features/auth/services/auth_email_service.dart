@@ -6,7 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class AuthEmailService {
   static final _client = Supabase.instance.client;
 
-  //signup with email
+  // signup with email
   static Future<bool> signUpWithEmail({
     required String email,
     required String password,
@@ -18,7 +18,7 @@ class AuthEmailService {
       final res = await _client.auth.signUp(
         email: email,
         password: password,
-        data: {'display_name': fullName},
+        data: {'display_name': fullName, 'role': role},
       );
 
       final user = res.user;
@@ -40,7 +40,7 @@ class AuthEmailService {
       await _client.from('profiles').insert(profileData);
 
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('flashMessage', 'signup_success');
+      await prefs.setString('flashMessage', 'signup_success::/login');
 
       await _client.auth.signOut();
       return true;
@@ -50,7 +50,7 @@ class AuthEmailService {
     }
   }
 
-  /// Email + Password Sign In
+  // Email + Password Sign In
   static Future<String?> signInWithEmail({
     required String email,
     required String password,
@@ -71,7 +71,7 @@ class AuthEmailService {
     }
   }
 
-  /// Strict check: only allow reset for email/password accounts
+  // Check reset password eligibility
   static Future<Map<String, dynamic>> checkPasswordResetEligibility({
     required String email,
   }) async {
@@ -132,7 +132,7 @@ class AuthEmailService {
     }
   }
 
-  /// Reset password backend trigger
+  // Reset password backend trigger
   static Future<void> resetPassword({required String email}) async {
     final result = await checkPasswordResetEligibility(email: email);
     if (!result['canReset']) {
@@ -140,7 +140,7 @@ class AuthEmailService {
     }
   }
 
-  /// Update password (after reset)
+  // Update password after reset
   static Future<void> updatePassword({required String newPassword}) async {
     try {
       final session = _client.auth.currentSession;
@@ -150,7 +150,7 @@ class AuthEmailService {
 
       await _client.auth.updateUser(UserAttributes(password: newPassword));
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('flashMessage', 'password_reset_success');
+      await prefs.setString('flashMessage', 'password_reset_success::/login');
       await _client.auth.signOut();
     } on AuthException catch (e) {
       throw Exception(ErrorHandler.getAuthError(e.message));

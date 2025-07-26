@@ -56,7 +56,9 @@ class AuthSocialService {
         await prefs.setString('flashMessage', 'social_signup_email_exists');
 
         if (context != null && context.mounted) {
-          context.go('/login');
+          context.go(
+            '/login',
+          ); // 🔁 Redirect to login page where flash message will be read
         }
 
         return 'An account with this email already exists. Please log in instead.';
@@ -153,13 +155,12 @@ class AuthSocialService {
         if (existingMethod == 'email' && currentMethod != 'email') {
           await _client.auth.signOut();
 
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString(
-            'flashMessage',
-            'social_login_blocked_email_signup',
-          );
-
+          // ✅ Only write flash message for login page
           if (context.mounted) {
+            await SharedPrefs.setString(
+              'loginError',
+              'This email is registered with email/password. Please log in using those credentials.',
+            );
             context.go('/login');
           }
 
@@ -169,13 +170,11 @@ class AuthSocialService {
         if (existingMethod != currentMethod) {
           await _client.auth.signOut();
 
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString(
-            'flashMessage',
-            'social_login_blocked_conflict',
-          );
-
           if (context.mounted) {
+            await SharedPrefs.setString(
+              'loginError',
+              'This account was registered using a different provider ($existingMethod). Please log in accordingly.',
+            );
             context.go('/login');
           }
 
@@ -191,11 +190,15 @@ class AuthSocialService {
 
       if (profile == null) {
         await _client.auth.signOut();
-        await SharedPrefs.setString(
-          'loginError',
-          'Please sign up before logging in.',
-        );
-        if (context.mounted) context.go('/login');
+
+        if (context.mounted) {
+          await SharedPrefs.setString(
+            'loginError',
+            'Please sign up before logging in.',
+          );
+          context.go('/login');
+        }
+
         return 'Please sign up before logging in.';
       }
 

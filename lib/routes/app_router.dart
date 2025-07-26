@@ -2,14 +2,15 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:job_finder_app/features/auth/pages/recruiter_sign_up_page.dart';
+import 'package:job_finder_app/features/auth/pages/auth/forgot_password_page.dart';
+import 'package:job_finder_app/features/auth/pages/auth/recruiter_sign_up_page.dart';
+import 'package:job_finder_app/features/auth/pages/auth/reset_password_page.dart';
+import 'package:job_finder_app/features/auth/pages/auth/sign_up_page.dart';
+import 'package:job_finder_app/features/auth/pages/home/home_page.dart';
+import 'package:job_finder_app/features/auth/pages/home/recruiter_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../features/auth/pages/splash_page.dart';
-import '../features/auth/pages/sign_up_page.dart';
-import '../features/auth/pages/login_page.dart';
-import '../features/auth/pages/home_page.dart';
-import '../features/auth/pages/forgot_password_page.dart';
-import '../features/auth/pages/reset_password_page.dart';
+import '../features/auth/pages/auth/login_page.dart';
 
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream<AuthState> stream) {
@@ -73,20 +74,37 @@ class AppRouter {
         name: 'recruiter-signup',
         builder: (context, state) => const RecruiterSignUpPage(),
       ),
+      GoRoute(
+        path: '/recruiter-home',
+        name: 'recruiter-home',
+        builder: (context, state) => const RecruiterHomePage(),
+      ),
     ],
     redirect: (context, state) {
       final session = Supabase.instance.client.auth.currentSession;
       final isLoggedIn = session != null;
-      final goingToAuth =
-          state.matchedLocation == '/login' ||
-          state.matchedLocation == '/signup';
+      final location = state.matchedLocation;
 
-      if (!isLoggedIn && state.matchedLocation == '/home') {
-        return '/login';
+      final publicRoutes = [
+        '/login',
+        '/signup',
+        '/forgot-password',
+        '/reset-password',
+      ];
+
+      if (!isLoggedIn) {
+        return publicRoutes.contains(location) ? null : '/login';
       }
 
-      if (isLoggedIn && goingToAuth) {
-        return '/home';
+      final role = session.user.userMetadata?['role'] as String?;
+      final isRecruiter = role == 'recruiter';
+
+      if (location == '/home' && isRecruiter) return '/recruiter-home';
+      if (location == '/recruiter-home' && !isRecruiter) return '/home';
+
+      if (publicRoutes.contains(location)) {
+        // prevent logged-in users from visiting login/signup again
+        return isRecruiter ? '/recruiter-home' : '/home';
       }
 
       return null;

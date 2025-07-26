@@ -5,15 +5,15 @@ import 'package:job_finder_app/core/services/flash_message_handler.dart';
 import 'package:job_finder_app/core/widgets/flash_banner.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../controllers/login_controller.dart';
+import '../../controllers/login_controller.dart';
 import 'package:job_finder_app/core/widgets/button.dart';
 import 'package:job_finder_app/core/widgets/text_field.dart';
 import 'package:job_finder_app/core/theme/app_theme.dart';
 import 'package:job_finder_app/core/utils/flash_message_queue.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
-  final String? errorMessage;
   const LoginPage({super.key, this.errorMessage});
+  final String? errorMessage;
 
   @override
   ConsumerState<LoginPage> createState() => _LoginPageState();
@@ -23,13 +23,19 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
+  bool _handledFlash = false;
+
   @override
-  void initState() {
-    super.initState();
-    Future.microtask(() async {
-      ref.read(loginControllerProvider.notifier).clearError();
-      await handleFlashMessageFromPrefs(ref);
-    });
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_handledFlash) {
+      _handledFlash = true;
+      Future.microtask(() {
+        if (mounted) {
+          handleFlashMessageFromPrefs(ref, '/login');
+        }
+      });
+    }
   }
 
   @override
@@ -46,9 +52,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           email: _emailController.text.trim(),
           password: _passwordController.text,
         );
-    if (success && mounted) {
-      context.go('/home');
-    } else {
+
+    if (!mounted) return;
+
+    if (!success) {
       final error = ref.read(loginControllerProvider).error;
       if (error != null) {
         ref
@@ -62,10 +69,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final success = await ref
         .read(loginControllerProvider.notifier)
         .signInWithSocial(provider: provider, context: context);
+
     if (!mounted) return;
-    if (success) {
-      context.go('/home');
-    } else {
+
+    if (!success) {
       final error = ref.read(loginControllerProvider).error;
       if (error != null) {
         ref
@@ -97,6 +104,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               ),
               const SizedBox(height: 18),
 
+              // ✅ Flash banner displays message from queue
               const FlashBanner(),
 
               AuthTextField(
@@ -119,7 +127,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 ),
               ),
               PrimaryButton(
-                text: "Sign In",
+                text: "Log In",
                 isLoading: state.isLoading,
                 onPressed: _handleEmailSignIn,
               ),

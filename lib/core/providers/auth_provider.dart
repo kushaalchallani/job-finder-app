@@ -10,17 +10,47 @@ final authStateProvider = StreamProvider<AuthState>((ref) {
 });
 
 final authRedirectProvider = Provider<void>((ref) {
-  ref.listen(authStateProvider, (previous, next) {
+  print('[authRedirectProvider] initialized ✅');
+
+  ref.listen(authStateProvider, (previous, next) async {
+    print('[authRedirectProvider] Auth state changed');
+
     final data = next.valueOrNull;
     final session = data?.session;
-    final context = navigatorKey.currentContext;
 
-    if (context == null) return;
+    // Delay to ensure context is available
+    Future.delayed(Duration(milliseconds: 100), () {
+      final context = navigatorKey.currentContext;
 
-    if (session != null) {
-      context.go('/home');
-    } else {
-      context.go('/login');
-    }
+      if (context == null) {
+        print('[authRedirectProvider] context is still null ❌');
+        return;
+      }
+
+      if (session != null) {
+        final user = session.user;
+        final metadata = user.userMetadata;
+
+        if (metadata == null) {
+          print('[authRedirectProvider] No metadata found ❌');
+          context.go('/home'); // fallback
+          return;
+        }
+
+        final role = metadata['role'] as String?;
+        print('[authRedirectProvider] role: $role');
+
+        if (role == 'seeker') {
+          context.go('/seeker/home');
+        } else if (role == 'recruiter') {
+          context.go('/recruiter/home');
+        } else {
+          context.go('/home');
+        }
+      } else {
+        print('[authRedirectProvider] no session, going to login');
+        context.go('/login');
+      }
+    });
   });
 });

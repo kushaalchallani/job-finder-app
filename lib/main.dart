@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:job_finder_app/core/providers/auth_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:job_finder_app/core/secrets/supabase_secrets.dart';
 import 'package:job_finder_app/core/utils/shared_prefs.dart';
@@ -61,6 +62,8 @@ class _MyAppState extends ConsumerState<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(authRedirectProvider); // 👈 Important
+
     return MaterialApp.router(
       title: 'Job Finder',
       debugShowCheckedModeBanner: false,
