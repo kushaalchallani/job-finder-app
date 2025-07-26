@@ -1,10 +1,21 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    
+
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    
+
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+
     <application
         android:label="job_finder_app"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:requestLegacyExternalStorage="true"> <!-- ✅ ADD THIS for API 29+ -->
 
-        <!-- ✅ Main Flutter activity with deep link support -->
+        <!-- Your existing activity configuration is perfect -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -19,13 +30,12 @@
                 android:name="io.flutter.embedding.android.NormalTheme"
                 android:resource="@style/NormalTheme" />
 
-            <!-- Default launcher intent -->
+            <!-- All your intent filters are perfect -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
 
-            <!-- ✅ Deep link intent for Supabase OAuth -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
@@ -35,7 +45,6 @@
                     android:host="login-callback"/>
             </intent-filter>
 
-            <!-- ✅ Deep link intent for password reset -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
@@ -45,7 +54,6 @@
                     android:host="reset-password"/>
             </intent-filter>
 
-            <!-- ✅ Deep link intent for password reset callback -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
@@ -55,7 +63,6 @@
                     android:host="reset-password-callback"/>
             </intent-filter>
 
-            <!-- ✅ Generic deep link intent for any jobfinder:// URL -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
@@ -65,13 +72,12 @@
             </intent-filter>
         </activity>
 
-        <!-- Flutter tooling -->
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
     </application>
 
-    <!-- Required to query activities that can process text -->
+    <!-- Your queries section is good -->
     <queries>
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>

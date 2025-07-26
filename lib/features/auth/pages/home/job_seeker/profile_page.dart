@@ -6,13 +6,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:job_finder_app/core/providers/profile_provider.dart';
 import 'package:job_finder_app/models/user_profile.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-class ProfileScreen extends ConsumerWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   // ignore: use_super_parameters
   const ProfileScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  @override
+  Widget build(BuildContext context) {
     final profileAsync = ref.watch(userProfileProvider);
     final experiencesAsync = ref.watch(userExperiencesProvider);
     final skillsAsync = ref.watch(userSkillsProvider);
@@ -228,7 +234,6 @@ class ProfileScreen extends ConsumerWidget {
               ),
 
               // Edit Button
-              // In your ProfileScreen, update the edit button onPressed:
               IconButton(
                 onPressed: () => context.push('/edit-profile'),
                 icon: const Icon(Icons.edit_outlined),
@@ -278,7 +283,9 @@ class ProfileScreen extends ConsumerWidget {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               TextButton.icon(
-                onPressed: () => _showComingSoon(context, 'Upload Resume'),
+                onPressed: () => context.push(
+                  '/upload-resume',
+                ), // Fixed: Navigate to upload screen
                 icon: const Icon(Icons.add, size: 18),
                 label: const Text('Upload'),
               ),
@@ -370,9 +377,183 @@ class ProfileScreen extends ConsumerWidget {
               ],
             ),
           ),
+
+          PopupMenuButton(
+            icon: Icon(Icons.more_vert, color: Colors.grey[600]),
+            itemBuilder: (context) => [
+              if (!resume.isPrimary)
+                const PopupMenuItem(
+                  value: 'primary',
+                  child: Row(
+                    children: [
+                      Icon(Icons.star_outline, size: 18),
+                      SizedBox(width: 8),
+                      Text('Set as Primary'),
+                    ],
+                  ),
+                ),
+              const PopupMenuItem(
+                value: 'download',
+                child: Row(
+                  children: [
+                    Icon(Icons.download, size: 18),
+                    SizedBox(width: 8),
+                    Text('Download'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'delete',
+                child: Row(
+                  children: [
+                    Icon(Icons.delete_outline, size: 18, color: Colors.red),
+                    SizedBox(width: 8),
+                    Text('Delete', style: TextStyle(color: Colors.red)),
+                  ],
+                ),
+              ),
+            ],
+            onSelected: (value) => _handleResumeAction(
+              value,
+              resume,
+            ), // Fixed: Removed context parameter
+          ),
         ],
       ),
     );
+  }
+
+  void _handleResumeAction(String action, UserResume resume) async {
+    switch (action) {
+      case 'primary':
+        await _setPrimaryResume(resume);
+        break;
+      case 'download':
+        await _downloadResume(resume);
+        break;
+      case 'delete':
+        await _deleteResume(resume);
+        break;
+    }
+  }
+
+  Future<void> _setPrimaryResume(UserResume resume) async {
+    try {
+      final supabase = Supabase.instance.client;
+      final user = supabase.auth.currentUser;
+
+      if (user == null) return;
+
+      // Unset all primary resumes
+      await supabase
+          .from('user_resumes')
+          .update({'is_primary': false})
+          .eq('user_id', user.id);
+
+      // Set this resume as primary
+      await supabase
+          .from('user_resumes')
+          .update({'is_primary': true})
+          .eq('id', resume.id);
+
+      // Fixed: Now properly refresh the provider
+      ref.refresh(userResumesProvider);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Primary resume updated!'),
+            backgroundColor: Color(0xFF50C878),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _downloadResume(UserResume resume) async {
+    // For now, just show the URL - you can implement actual download later
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Resume URL: ${resume.fileUrl}'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
+  Future<void> _deleteResume(UserResume resume) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Resume'),
+        content: Text('Are you sure you want to delete "${resume.fileName}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Delete', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        final supabase = Supabase.instance.client;
+
+        // Extract file path from URL for deletion
+        final uri = Uri.parse(resume.fileUrl);
+        final pathSegments = uri.pathSegments;
+        final fileName = pathSegments.length >= 2
+            ? pathSegments.sublist(2).join('/')
+            : resume.fileName;
+
+        // Delete from storage
+        await supabase.storage.from('resumes').remove([fileName]);
+
+        // Delete from database
+        await supabase.from('user_resumes').delete().eq('id', resume.id);
+
+        // Fixed: Now properly refresh the provider
+        ref.refresh(userResumesProvider);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Resume deleted successfully!'),
+              backgroundColor: Color(0xFF50C878),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error deleting resume: ${e.toString()}'),
+              backgroundColor: Colors.red,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+    }
   }
 
   Widget _buildExperienceSection(
@@ -403,7 +584,7 @@ class ProfileScreen extends ConsumerWidget {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               TextButton.icon(
-                onPressed: () => _showComingSoon(context, 'Add Experience'),
+                onPressed: () => _showComingSoon('Add Experience'),
                 icon: const Icon(Icons.add, size: 18),
                 label: const Text('Add'),
               ),
@@ -510,7 +691,7 @@ class ProfileScreen extends ConsumerWidget {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               TextButton.icon(
-                onPressed: () => _showComingSoon(context, 'Add Skills'),
+                onPressed: () => _showComingSoon('Add Skills'),
                 icon: const Icon(Icons.add, size: 18),
                 label: const Text('Add'),
               ),
@@ -729,7 +910,7 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  void _showComingSoon(BuildContext context, String feature) {
+  void _showComingSoon(String feature) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('$feature coming soon!'),

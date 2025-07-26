@@ -6,9 +6,10 @@ import 'package:job_finder_app/features/auth/pages/auth/forgot_password_page.dar
 import 'package:job_finder_app/features/auth/pages/auth/recruiter_sign_up_page.dart';
 import 'package:job_finder_app/features/auth/pages/auth/reset_password_page.dart';
 import 'package:job_finder_app/features/auth/pages/auth/sign_up_page.dart';
-import 'package:job_finder_app/features/auth/pages/home/job_seeker/edit_profile_screen.dart';
+import 'package:job_finder_app/features/auth/pages/home/job_seeker/profile/edit_profile_screen.dart';
 import 'package:job_finder_app/features/auth/pages/home/job_seeker/job_details.dart';
 import 'package:job_finder_app/features/auth/pages/home/job_seeker/job_seeker_main.dart';
+import 'package:job_finder_app/features/auth/pages/home/job_seeker/profile/upload_resume_screen.dart';
 import 'package:job_finder_app/features/auth/pages/home/recruiter/create_job.dart';
 import 'package:job_finder_app/features/auth/pages/home/recruiter/recruiter_main.dart';
 import 'package:job_finder_app/features/auth/pages/home/recruiter/recruiter_dashboard.dart';
@@ -103,6 +104,10 @@ class AppRouter {
       GoRoute(
         path: '/edit-profile',
         builder: (context, state) => const EditProfileScreen(),
+      ),
+      GoRoute(
+        path: '/upload-resume',
+        builder: (context, state) => const UploadResumeScreen(),
       ),
     ],
     redirect: (context, state) {
