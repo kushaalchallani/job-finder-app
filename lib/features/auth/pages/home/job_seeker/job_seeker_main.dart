@@ -1,10 +1,9 @@
-// lib/screens/job_seeker/job_seeker_main_screen.dart
-// ignore_for_file: deprecated_member_use
-
+// lib/features/auth/pages/home/job_seeker/job_seeker_main.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:job_finder_app/features/auth/pages/home/job_seeker/find_jobs.dart';
 import 'package:job_finder_app/features/auth/pages/home/job_seeker/home_page.dart';
+import 'package:job_finder_app/features/auth/pages/home/job_seeker/profile_page.dart';
 
 class JobSeekerMainScreen extends ConsumerStatefulWidget {
   // ignore: use_super_parameters
@@ -18,22 +17,24 @@ class JobSeekerMainScreen extends ConsumerStatefulWidget {
 class _JobSeekerMainScreenState extends ConsumerState<JobSeekerMainScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _tabs = [
-    const HomeScreen(), // Home tab
-    const FindJobsScreen(), // Find Jobs tab
-    // const ApplicationsScreen(),   // Applications tab
-    // const ProfileScreen(),        // Profile tab
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: _tabs),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: [
+          const HomeScreen(),
+          const FindJobsScreen(),
+          _buildApplicationsScreen(),
+          ProfileScreen(), // Inline ProfileScreen - no external dependencies
+        ],
+      ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: Colors.white,
           boxShadow: [
             BoxShadow(
+              // ignore: deprecated_member_use
               color: Colors.black.withOpacity(0.1),
               blurRadius: 10,
               offset: const Offset(0, -2),
@@ -78,6 +79,30 @@ class _JobSeekerMainScreenState extends ConsumerState<JobSeekerMainScreen> {
               _currentIndex = index;
             });
           },
+        ),
+      ),
+    );
+  }
+
+  // Built-in Applications screen - no external dependencies
+  Widget _buildApplicationsScreen() {
+    return Scaffold(
+      backgroundColor: Colors.grey[50],
+      body: const SafeArea(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.assignment_outlined, size: 64, color: Colors.grey),
+              SizedBox(height: 16),
+              Text(
+                'Applications',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 8),
+              Text('Coming soon!', style: TextStyle(color: Colors.grey)),
+            ],
+          ),
         ),
       ),
     );
