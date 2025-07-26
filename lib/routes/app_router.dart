@@ -6,7 +6,8 @@ import 'package:job_finder_app/features/auth/pages/auth/forgot_password_page.dar
 import 'package:job_finder_app/features/auth/pages/auth/recruiter_sign_up_page.dart';
 import 'package:job_finder_app/features/auth/pages/auth/reset_password_page.dart';
 import 'package:job_finder_app/features/auth/pages/auth/sign_up_page.dart';
-import 'package:job_finder_app/features/auth/pages/home/home_page.dart';
+import 'package:job_finder_app/features/auth/pages/home/job_seeker/job_details.dart';
+import 'package:job_finder_app/features/auth/pages/home/job_seeker/job_seeker_main.dart';
 import 'package:job_finder_app/features/auth/pages/home/recruiter/create_job.dart';
 import 'package:job_finder_app/features/auth/pages/home/recruiter/recruiter_main.dart';
 import 'package:job_finder_app/features/auth/pages/home/recruiter/recruiter_dashboard.dart';
@@ -59,7 +60,7 @@ class AppRouter {
       GoRoute(
         path: '/home',
         name: 'home',
-        builder: (context, state) => const HomePage(),
+        builder: (context, state) => const JobSeekerMainScreen(),
       ),
       GoRoute(
         path: '/forgot-password',
@@ -90,6 +91,13 @@ class AppRouter {
         path: '/create-job',
         name: 'create-job',
         builder: (context, state) => const CreateJobScreen(),
+      ),
+      GoRoute(
+        path: '/job-details/:jobId',
+        builder: (context, state) {
+          final jobId = state.pathParameters['jobId']!;
+          return JobDetailsScreen(jobId: jobId);
+        },
       ),
     ],
     redirect: (context, state) {

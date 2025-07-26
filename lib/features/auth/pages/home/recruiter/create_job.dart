@@ -1,10 +1,13 @@
 // lib/screens/recruiter/create_job_screen.dart
+// ignore_for_file: deprecated_member_use, prefer_final_fields
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:go_router/go_router.dart';
 
 class CreateJobScreen extends ConsumerStatefulWidget {
+  // ignore: use_super_parameters
   const CreateJobScreen({Key? key}) : super(key: key);
 
   @override

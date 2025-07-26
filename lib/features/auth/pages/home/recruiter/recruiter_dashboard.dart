@@ -1,8 +1,11 @@
 // lib/features/auth/pages/home/recruiter/recruiter_dashboard.dart
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class RecruiterDashboard extends ConsumerWidget {
+  // ignore: use_super_parameters
   const RecruiterDashboard({Key? key}) : super(key: key);
 
   @override

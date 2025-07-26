@@ -1,26 +1,28 @@
-// lib/screens/recruiter/recruiter_main_screen.dart
+// lib/screens/job_seeker/job_seeker_main_screen.dart
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:job_finder_app/features/auth/pages/home/recruiter/create_job.dart';
-import 'package:job_finder_app/features/auth/pages/home/recruiter/recruiter_dashboard.dart';
+import 'package:job_finder_app/features/auth/pages/home/job_seeker/find_jobs.dart';
+import 'package:job_finder_app/features/auth/pages/home/job_seeker/home_page.dart';
 
-class RecruiterMainScreen extends ConsumerStatefulWidget {
+class JobSeekerMainScreen extends ConsumerStatefulWidget {
   // ignore: use_super_parameters
-  const RecruiterMainScreen({Key? key}) : super(key: key);
+  const JobSeekerMainScreen({Key? key}) : super(key: key);
 
   @override
-  ConsumerState<RecruiterMainScreen> createState() =>
-      _RecruiterMainScreenState();
+  ConsumerState<JobSeekerMainScreen> createState() =>
+      _JobSeekerMainScreenState();
 }
 
-class _RecruiterMainScreenState extends ConsumerState<RecruiterMainScreen> {
+class _JobSeekerMainScreenState extends ConsumerState<JobSeekerMainScreen> {
   int _currentIndex = 0;
 
   final List<Widget> _tabs = [
-    const RecruiterDashboard(),
-    const CreateJobScreen(),
-    // const ApplicationsTab(), // You'll create this later
-    // const ProfileTab(),      // You'll create this later
+    const HomeScreen(), // Home tab
+    const FindJobsScreen(), // Find Jobs tab
+    // const ApplicationsScreen(),   // Applications tab
+    // const ProfileScreen(),        // Profile tab
   ];
 
   @override
@@ -32,7 +34,6 @@ class _RecruiterMainScreenState extends ConsumerState<RecruiterMainScreen> {
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              // ignore: deprecated_member_use
               color: Colors.black.withOpacity(0.1),
               blurRadius: 10,
               offset: const Offset(0, -2),
@@ -52,18 +53,18 @@ class _RecruiterMainScreenState extends ConsumerState<RecruiterMainScreen> {
           currentIndex: _currentIndex,
           items: const [
             BottomNavigationBarItem(
-              icon: Icon(Icons.dashboard_outlined),
-              activeIcon: Icon(Icons.dashboard),
-              label: 'Dashboard',
+              icon: Icon(Icons.home_outlined),
+              activeIcon: Icon(Icons.home),
+              label: 'Home',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.add_business_outlined),
-              activeIcon: Icon(Icons.add_business),
-              label: 'Create Job',
+              icon: Icon(Icons.search_outlined),
+              activeIcon: Icon(Icons.search),
+              label: 'Find Jobs',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.inbox_outlined),
-              activeIcon: Icon(Icons.inbox),
+              icon: Icon(Icons.assignment_outlined),
+              activeIcon: Icon(Icons.assignment),
               label: 'Applications',
             ),
             BottomNavigationBarItem(

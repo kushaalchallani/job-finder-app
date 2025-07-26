@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -155,7 +157,6 @@ class AuthSocialService {
         if (existingMethod == 'email' && currentMethod != 'email') {
           await _client.auth.signOut();
 
-          // ✅ Only write flash message for login page
           if (context.mounted) {
             await SharedPrefs.setString(
               'loginError',
