@@ -7,7 +7,9 @@ import 'package:job_finder_app/features/auth/pages/auth/recruiter_sign_up_page.d
 import 'package:job_finder_app/features/auth/pages/auth/reset_password_page.dart';
 import 'package:job_finder_app/features/auth/pages/auth/sign_up_page.dart';
 import 'package:job_finder_app/features/auth/pages/home/home_page.dart';
-import 'package:job_finder_app/features/auth/pages/home/recruiter_page.dart';
+import 'package:job_finder_app/features/auth/pages/home/recruiter/create_job.dart';
+import 'package:job_finder_app/features/auth/pages/home/recruiter/recruiter_main.dart';
+import 'package:job_finder_app/features/auth/pages/home/recruiter/recruiter_dashboard.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../features/auth/pages/splash_page.dart';
 import '../features/auth/pages/auth/login_page.dart';
@@ -77,7 +79,17 @@ class AppRouter {
       GoRoute(
         path: '/recruiter-home',
         name: 'recruiter-home',
-        builder: (context, state) => const RecruiterHomePage(),
+        builder: (context, state) => const RecruiterMainScreen(),
+      ),
+      GoRoute(
+        path: '/recruiter-dashboard',
+        name: 'recruiter-dashboard',
+        builder: (context, state) => const RecruiterDashboard(),
+      ),
+      GoRoute(
+        path: '/create-job',
+        name: 'create-job',
+        builder: (context, state) => const CreateJobScreen(),
       ),
     ],
     redirect: (context, state) {
