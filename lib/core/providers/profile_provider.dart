@@ -91,13 +91,14 @@ final profileCompletionProvider = Provider<double>((ref) {
   final experiencesAsync = ref.watch(userExperiencesProvider);
   final skillsAsync = ref.watch(userSkillsProvider);
   final resumesAsync = ref.watch(userResumesProvider);
+  final educationAsync = ref.watch(userEducationProvider);
 
   return profileAsync.when(
     data: (profile) {
       if (profile == null) return 0.0;
 
       double completion = 0.0;
-      int totalFields = 10; // Total number of profile fields to check
+      int totalFields = 12; // increase fields by education's weight
 
       // Basic info (5 fields)
       if (profile.fullName?.isNotEmpty == true) completion += 1;
@@ -121,9 +122,36 @@ final profileCompletionProvider = Provider<double>((ref) {
         if (resumes.isNotEmpty) completion += 1;
       });
 
+      // Education (2 fields, or adjust weight as you like)
+      educationAsync.whenData((educations) {
+        if (educations.isNotEmpty) completion += 2;
+      });
+
       return completion / totalFields;
     },
     loading: () => 0.0,
     error: (_, __) => 0.0,
   );
+});
+
+// User Education Provider
+final userEducationProvider = FutureProvider<List<UserEducation>>((ref) async {
+  final supabase = Supabase.instance.client;
+  final user = supabase.auth.currentUser;
+
+  if (user == null) return [];
+
+  try {
+    final response = await supabase
+        .from('user_education') // <-- your table name
+        .select()
+        .eq('user_id', user.id)
+        .order('start_date', ascending: false);
+
+    return (response as List)
+        .map((edu) => UserEducation.fromJson(edu))
+        .toList();
+  } catch (e) {
+    return [];
+  }
 });

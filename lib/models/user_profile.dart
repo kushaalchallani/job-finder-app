@@ -156,3 +156,33 @@ class UserResume {
     );
   }
 }
+
+class UserEducation {
+  final String id;
+  final String? degree, fieldOfStudy, institution, gpa, description;
+  final DateTime startDate;
+  final DateTime? endDate;
+  // Add any other columns you wish
+
+  UserEducation({
+    required this.id,
+    required this.startDate,
+    this.degree,
+    this.fieldOfStudy,
+    this.institution,
+    this.endDate,
+    this.gpa,
+    this.description,
+  });
+
+  factory UserEducation.fromJson(Map<String, dynamic> json) => UserEducation(
+    id: json['id'] as String,
+    degree: json['degree'],
+    fieldOfStudy: json['field_of_study'],
+    institution: json['institution'],
+    gpa: json['gpa'],
+    description: json['description'],
+    startDate: DateTime.parse(json['start_date']),
+    endDate: json['end_date'] != null ? DateTime.parse(json['end_date']) : null,
+  );
+}

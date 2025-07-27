@@ -1,3 +1,5 @@
+// ignore_for_file: unused_result, deprecated_member_use
+
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,9 +8,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:path/path.dart' as path;
 import 'package:job_finder_app/core/providers/profile_provider.dart';
-import 'package:job_finder_app/models/user_profile.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
+  // ignore: use_super_parameters
   const EditProfileScreen({Key? key}) : super(key: key);
 
   @override
@@ -184,6 +186,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                       ? NetworkImage(remoteProfileImage)
                                       : null)
                                   as ImageProvider<Object>?,
+                        // ignore: sort_child_properties_last
                         child:
                             _profileImageFile == null &&
                                 remoteProfileImage == null
