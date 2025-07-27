@@ -691,7 +691,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               TextButton.icon(
-                onPressed: () => _showComingSoon('Add Skills'),
+                onPressed: () => context.push('/edit-skills'),
                 icon: const Icon(Icons.add, size: 18),
                 label: const Text('Add'),
               ),

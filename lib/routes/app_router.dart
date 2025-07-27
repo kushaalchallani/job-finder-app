@@ -9,6 +9,7 @@ import 'package:job_finder_app/features/auth/pages/auth/sign_up_page.dart';
 import 'package:job_finder_app/features/auth/pages/home/job_seeker/profile/edit_profile_screen.dart';
 import 'package:job_finder_app/features/auth/pages/home/job_seeker/job_details.dart';
 import 'package:job_finder_app/features/auth/pages/home/job_seeker/job_seeker_main.dart';
+import 'package:job_finder_app/features/auth/pages/home/job_seeker/profile/edit_skills_screen.dart';
 import 'package:job_finder_app/features/auth/pages/home/job_seeker/profile/upload_resume_screen.dart';
 import 'package:job_finder_app/features/auth/pages/home/recruiter/create_job.dart';
 import 'package:job_finder_app/features/auth/pages/home/recruiter/recruiter_main.dart';
@@ -108,6 +109,10 @@ class AppRouter {
       GoRoute(
         path: '/upload-resume',
         builder: (context, state) => const UploadResumeScreen(),
+      ),
+      GoRoute(
+        path: '/edit-skills',
+        builder: (context, state) => const EditSkillsScreen(),
       ),
     ],
     redirect: (context, state) {
