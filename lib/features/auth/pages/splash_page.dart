@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:job_finder_app/core/theme/app_theme.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/utils/shared_prefs.dart';
+import 'package:job_finder_app/core/widgets/button.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -68,22 +69,9 @@ class _SplashPageState extends State<SplashPage> {
                 Column(
                   children: [
                     if (_isFirstLaunch)
-                      ElevatedButton(
+                      PrimaryButton(
+                        text: "Get Started",
                         onPressed: _onGetStarted,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          minimumSize: const Size.fromHeight(50),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: const Text(
-                          "Get Started",
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: AppColors.onPrimary,
-                          ),
-                        ),
                       )
                     else if (_isLoading)
                       const CircularProgressIndicator(

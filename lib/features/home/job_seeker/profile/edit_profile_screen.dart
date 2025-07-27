@@ -7,7 +7,9 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:path/path.dart' as path;
+import 'package:job_finder_app/core/theme/app_theme.dart';
 import 'package:job_finder_app/core/providers/profile_provider.dart';
+import 'package:job_finder_app/core/widgets/text_field.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   // ignore: use_super_parameters
@@ -114,7 +116,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Image upload error: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -134,15 +136,15 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         title: const Text(
           'Edit Profile',
           style: TextStyle(
-            color: Colors.black,
+            color: AppColors.textPrimary,
             fontWeight: FontWeight.w600,
             fontSize: 18,
           ),
         ),
-        backgroundColor: Colors.grey[50],
+        backgroundColor: AppColors.background,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.black),
+          icon: const Icon(Icons.close, color: AppColors.textPrimary),
           onPressed: () => context.pop(),
         ),
         actions: [
@@ -157,7 +159,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 : const Text(
                     'Save',
                     style: TextStyle(
-                      color: Color(0xFF4A90E2),
+                      color: AppColors.primary,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -196,9 +198,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                 color: Color(0xFF4A90E2),
                               )
                             : null,
-                        backgroundColor: const Color(
-                          0xFF4A90E2,
-                        ).withOpacity(0.09),
+                        backgroundColor: AppColors.primary.withOpacity(0.09),
                       ),
                       Positioned(
                         right: 0,
@@ -209,7 +209,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                               : _pickAndUploadProfileImage,
                           child: Container(
                             decoration: const BoxDecoration(
-                              color: Color(0xFF4A90E2),
+                              color: AppColors.primary,
                               shape: BoxShape.circle,
                             ),
                             padding: const EdgeInsets.all(8),
@@ -220,13 +220,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2,
                                       valueColor: AlwaysStoppedAnimation<Color>(
-                                        Colors.white,
+                                        AppColors.onPrimary,
                                       ),
                                     ),
                                   )
                                 : const Icon(
                                     Icons.camera_alt,
-                                    color: Colors.white,
+                                    color: AppColors.onPrimary,
                                     size: 20,
                                   ),
                           ),
@@ -308,11 +308,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: AppColors.shadowLight,
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -326,7 +326,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Colors.black,
+              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 16),
@@ -351,35 +351,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: Colors.black,
+            color: AppColors.textPrimary,
           ),
         ),
         const SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.grey[50],
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.grey[200]!),
-          ),
-          child: TextFormField(
-            controller: controller,
-            maxLines: maxLines,
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: TextStyle(color: Colors.grey[500]),
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.all(16),
-            ),
-            validator: required
-                ? (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'This field is required';
-                    }
-                    return null;
-                  }
-                : null,
-          ),
-        ),
+        AuthTextField(controller: controller, label: hint),
       ],
     );
   }
@@ -438,7 +414,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Error updating profile: ${e.toString()}'),
-              backgroundColor: Colors.red,
+              backgroundColor: AppColors.error,
               behavior: SnackBarBehavior.floating,
             ),
           );

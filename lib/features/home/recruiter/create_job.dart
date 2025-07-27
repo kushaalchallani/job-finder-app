@@ -5,6 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:go_router/go_router.dart';
+import 'package:job_finder_app/core/theme/app_theme.dart';
+import 'package:job_finder_app/core/widgets/text_field.dart';
+import 'package:job_finder_app/core/widgets/button.dart';
 
 class CreateJobScreen extends ConsumerStatefulWidget {
   // ignore: use_super_parameters
@@ -34,20 +37,20 @@ class _CreateJobScreenState extends ConsumerState<CreateJobScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text(
           'Create Job Opening',
           style: TextStyle(
-            color: Colors.black,
+            color: AppColors.textPrimary,
             fontWeight: FontWeight.w600,
             fontSize: 20,
           ),
         ),
-        backgroundColor: Colors.grey[50],
+        backgroundColor: AppColors.background,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => context.pop(), // Fixed to use Go Router
         ),
         actions: [
@@ -57,7 +60,7 @@ class _CreateJobScreenState extends ConsumerState<CreateJobScreen> {
             child: Text(
               'Save Draft',
               style: TextStyle(
-                color: _isLoading ? Colors.grey : Colors.grey[600],
+                color: _isLoading ? AppColors.textSecondary : AppColors.grey600,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -258,25 +261,7 @@ class _CreateJobScreenState extends ConsumerState<CreateJobScreen> {
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: Colors.grey[200]!),
           ),
-          child: TextFormField(
-            controller: controller,
-            maxLines: maxLines,
-            style: const TextStyle(fontSize: 16),
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: TextStyle(color: Colors.grey[500], fontSize: 16),
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.all(16),
-            ),
-            validator: required
-                ? (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'This field is required';
-                    }
-                    return null;
-                  }
-                : null,
-          ),
+          child: AuthTextField(controller: controller, label: hint),
         ),
       ],
     );
@@ -359,16 +344,7 @@ class _CreateJobScreenState extends ConsumerState<CreateJobScreen> {
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.grey[200]!),
                 ),
-                child: TextFormField(
-                  controller: controller,
-                  decoration: InputDecoration(
-                    hintText: hint,
-                    hintStyle: TextStyle(color: Colors.grey[500]),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.all(16),
-                  ),
-                  onFieldSubmitted: (_) => onAdd, // Added enter key support
-                ),
+                child: AuthTextField(controller: controller, label: hint),
               ),
             ),
             const SizedBox(width: 12),
@@ -436,33 +412,10 @@ class _CreateJobScreenState extends ConsumerState<CreateJobScreen> {
   }
 
   Widget _buildSubmitButton() {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: _isLoading ? null : _submitJob,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF4A90E2),
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          elevation: 0,
-        ),
-        child: _isLoading
-            ? const SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              )
-            : const Text(
-                'Create Job Opening',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-              ),
-      ),
+    return PrimaryButton(
+      text: 'Create Job Opening',
+      onPressed: _submitJob,
+      isLoading: _isLoading,
     );
   }
 

@@ -3,7 +3,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:job_finder_app/core/theme/app_theme.dart';
 import 'package:job_finder_app/core/providers/profile_provider.dart';
+import 'package:job_finder_app/core/widgets/text_field.dart';
+import 'package:job_finder_app/core/widgets/button.dart';
 
 final allProficiencyLevels = ['beginner', 'intermediate', 'advanced', 'expert'];
 
@@ -42,7 +45,7 @@ class _EditSkillsScreenState extends ConsumerState<EditSkillsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error: ${e.toString()}'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.error,
         ),
       );
     } finally {
@@ -59,7 +62,7 @@ class _EditSkillsScreenState extends ConsumerState<EditSkillsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error: ${e.toString()}'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.error,
         ),
       );
     }
@@ -72,11 +75,11 @@ class _EditSkillsScreenState extends ConsumerState<EditSkillsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edit Skills'),
-        backgroundColor: Colors.grey[50],
+        backgroundColor: AppColors.background,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
+        iconTheme: const IconThemeData(color: AppColors.textPrimary),
       ),
-      backgroundColor: Colors.grey[50],
+      backgroundColor: AppColors.background,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -86,15 +89,18 @@ class _EditSkillsScreenState extends ConsumerState<EditSkillsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  TextFormField(
+                  AuthTextField(
                     controller: _skillController,
-                    decoration: const InputDecoration(labelText: 'Skill name'),
+                    label: 'Skill name',
                   ),
                   const SizedBox(height: 10),
                   DropdownButtonFormField<String>(
                     value: _selectedLevel,
                     decoration: const InputDecoration(labelText: 'Proficiency'),
-                    style: const TextStyle(fontSize: 14, color: Colors.black),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: AppColors.textPrimary,
+                    ),
                     items: allProficiencyLevels
                         .map(
                           (level) => DropdownMenuItem(
@@ -111,18 +117,10 @@ class _EditSkillsScreenState extends ConsumerState<EditSkillsScreen> {
                     },
                   ),
                   const SizedBox(height: 10),
-                  SizedBox(
-                    height: 44,
-                    child: ElevatedButton(
-                      onPressed: _isLoading ? null : _addSkill,
-                      child: _isLoading
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Text("Add"),
-                    ),
+                  PrimaryButton(
+                    text: "Add",
+                    onPressed: _addSkill,
+                    isLoading: _isLoading,
                   ),
                 ],
               ),
@@ -139,7 +137,7 @@ class _EditSkillsScreenState extends ConsumerState<EditSkillsScreen> {
               data: (skills) => skills.isEmpty
                   ? const Text(
                       "You haven't added any skills yet.",
-                      style: TextStyle(color: Colors.grey),
+                      style: TextStyle(color: AppColors.textSecondary),
                     )
                   : Wrap(
                       spacing: 8,
@@ -157,8 +155,10 @@ class _EditSkillsScreenState extends ConsumerState<EditSkillsScreen> {
                           .toList(),
                     ),
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) =>
-                  Text(e.toString(), style: const TextStyle(color: Colors.red)),
+              error: (e, _) => Text(
+                e.toString(),
+                style: const TextStyle(color: AppColors.error),
+              ),
             ),
           ],
         ),

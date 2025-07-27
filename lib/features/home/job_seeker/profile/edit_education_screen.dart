@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:job_finder_app/core/providers/profile_provider.dart';
+import 'package:job_finder_app/core/theme/app_theme.dart';
+import 'package:job_finder_app/core/widgets/text_field.dart';
+import 'package:job_finder_app/core/widgets/button.dart';
 
 class EditEducationScreen extends ConsumerStatefulWidget {
   // ignore: use_super_parameters
@@ -107,11 +110,11 @@ class _EditEducationScreenState extends ConsumerState<EditEducationScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edit Education'),
-        backgroundColor: Colors.grey[50],
+        backgroundColor: AppColors.background,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
+        iconTheme: const IconThemeData(color: AppColors.textPrimary),
       ),
-      backgroundColor: Colors.grey[50],
+      backgroundColor: AppColors.background,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -122,34 +125,24 @@ class _EditEducationScreenState extends ConsumerState<EditEducationScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  TextFormField(
+                  AuthTextField(
                     controller: _institutionController,
-                    decoration: const InputDecoration(
-                      labelText: 'Institution (School/College)',
-                    ),
-                    validator: (v) =>
-                        v == null || v.trim().isEmpty ? 'Required' : null,
+                    label: 'Institution (School/College)',
                   ),
                   const SizedBox(height: 10),
-                  TextFormField(
+                  AuthTextField(
                     controller: _degreeController,
-                    decoration: const InputDecoration(
-                      labelText: 'Degree (e.g. B.Sc, M.Tech)',
-                    ),
+                    label: 'Degree (e.g. B.Sc, M.Tech)',
                   ),
                   const SizedBox(height: 10),
-                  TextFormField(
+                  AuthTextField(
                     controller: _fieldController,
-                    decoration: const InputDecoration(
-                      labelText: 'Field of Study',
-                    ),
+                    label: 'Field of Study',
                   ),
                   const SizedBox(height: 10),
-                  TextFormField(
+                  AuthTextField(
                     controller: _gpaController,
-                    decoration: const InputDecoration(
-                      labelText: 'GPA (optional)',
-                    ),
+                    label: 'GPA (optional)',
                   ),
                   const SizedBox(height: 10),
                   Row(
@@ -194,26 +187,15 @@ class _EditEducationScreenState extends ConsumerState<EditEducationScreen> {
                     ],
                   ),
                   const SizedBox(height: 10),
-                  TextFormField(
+                  AuthTextField(
                     controller: _descController,
-                    maxLines: 3,
-                    decoration: const InputDecoration(
-                      labelText: 'Description (optional)',
-                    ),
+                    label: 'Description (optional)',
                   ),
                   const SizedBox(height: 10),
-                  SizedBox(
-                    height: 44,
-                    child: ElevatedButton(
-                      onPressed: _isLoading ? null : _addEducation,
-                      child: _isLoading
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Text('Add Education'),
-                    ),
+                  PrimaryButton(
+                    text: 'Add Education',
+                    onPressed: _addEducation,
+                    isLoading: _isLoading,
                   ),
                 ],
               ),
@@ -231,7 +213,7 @@ class _EditEducationScreenState extends ConsumerState<EditEducationScreen> {
               data: (items) => items.isEmpty
                   ? const Text(
                       "No education added yet.",
-                      style: TextStyle(color: Colors.grey),
+                      style: TextStyle(color: AppColors.textSecondary),
                     )
                   : Column(
                       children: items
@@ -247,7 +229,9 @@ class _EditEducationScreenState extends ConsumerState<EditEducationScreen> {
                                   children: [
                                     Text(
                                       e.institution ?? '',
-                                      style: TextStyle(color: Colors.grey[700]),
+                                      style: TextStyle(
+                                        color: AppColors.grey700,
+                                      ),
                                     ),
                                     Text(
                                       '${e.startDate.month}/${e.startDate.year} - '
@@ -255,7 +239,7 @@ class _EditEducationScreenState extends ConsumerState<EditEducationScreen> {
                                       '${e.gpa != null && e.gpa!.isNotEmpty ? ' | GPA: ${e.gpa}' : ''}',
                                       style: TextStyle(
                                         fontSize: 13,
-                                        color: Colors.grey[500],
+                                        color: AppColors.grey500,
                                       ),
                                     ),
                                     if (e.description != null &&
@@ -284,8 +268,10 @@ class _EditEducationScreenState extends ConsumerState<EditEducationScreen> {
                           .toList(),
                     ),
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) =>
-                  Text(e.toString(), style: const TextStyle(color: Colors.red)),
+              error: (e, _) => Text(
+                e.toString(),
+                style: const TextStyle(color: AppColors.error),
+              ),
             ),
           ],
         ),

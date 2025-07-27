@@ -8,7 +8,9 @@ import 'package:file_picker/file_picker.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:path/path.dart' as path;
+import 'package:job_finder_app/core/theme/app_theme.dart';
 import 'package:job_finder_app/core/providers/profile_provider.dart';
+import 'package:job_finder_app/core/widgets/button.dart';
 
 class UploadResumeScreen extends ConsumerStatefulWidget {
   // ignore: use_super_parameters
@@ -28,20 +30,20 @@ class _UploadResumeScreenState extends ConsumerState<UploadResumeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text(
           'Upload Resume',
           style: TextStyle(
-            color: Colors.black,
+            color: AppColors.textPrimary,
             fontWeight: FontWeight.w600,
             fontSize: 18,
           ),
         ),
-        backgroundColor: Colors.grey[50],
+        backgroundColor: AppColors.background,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.black),
+          icon: const Icon(Icons.close, color: AppColors.textPrimary),
           onPressed: () => context.pop(),
         ),
       ),
@@ -66,45 +68,10 @@ class _UploadResumeScreenState extends ConsumerState<UploadResumeScreen> {
 
             // Upload Button
             if (_selectedFile != null)
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isUploading ? null : _uploadResume,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4A90E2),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: _isUploading
-                      ? const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  Colors.white,
-                                ),
-                              ),
-                            ),
-                            SizedBox(width: 12),
-                            Text('Uploading...'),
-                          ],
-                        )
-                      : const Text(
-                          'Upload Resume',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                ),
+              PrimaryButton(
+                text: 'Upload Resume',
+                onPressed: _uploadResume,
+                isLoading: _isUploading,
               ),
           ],
         ),
@@ -117,17 +84,17 @@ class _UploadResumeScreenState extends ConsumerState<UploadResumeScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: AppColors.shadowLight,
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
         ],
         border: _selectedFile != null
-            ? Border.all(color: const Color(0xFF4A90E2), width: 2)
+            ? Border.all(color: AppColors.primary, width: 2)
             : null,
       ),
       child: Column(
@@ -137,7 +104,7 @@ class _UploadResumeScreenState extends ConsumerState<UploadResumeScreen> {
             Icon(
               Icons.cloud_upload_outlined,
               size: 64,
-              color: Colors.grey[400],
+              color: AppColors.grey400,
             ),
             const SizedBox(height: 16),
             const Text(
@@ -147,26 +114,11 @@ class _UploadResumeScreenState extends ConsumerState<UploadResumeScreen> {
             const SizedBox(height: 8),
             Text(
               'Choose a PDF or DOC file from your device',
-              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+              style: TextStyle(fontSize: 14, color: AppColors.grey600),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
-            ElevatedButton.icon(
-              onPressed: _pickFile,
-              icon: const Icon(Icons.folder_open),
-              label: const Text('Browse Files'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4A90E2),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-            ),
+            PrimaryButton(text: 'Browse Files', onPressed: _pickFile),
           ] else ...[
             // Selected file display
             Row(
@@ -174,12 +126,12 @@ class _UploadResumeScreenState extends ConsumerState<UploadResumeScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF4A90E2).withOpacity(0.1),
+                    color: AppColors.primary.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
                     _getFileIcon(),
-                    color: const Color(0xFF4A90E2),
+                    color: AppColors.primary,
                     size: 32,
                   ),
                 ),
@@ -198,7 +150,10 @@ class _UploadResumeScreenState extends ConsumerState<UploadResumeScreen> {
                       const SizedBox(height: 4),
                       Text(
                         _formatFileSize(_fileSize ?? 0),
-                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppColors.grey600,
+                        ),
                       ),
                     ],
                   ),

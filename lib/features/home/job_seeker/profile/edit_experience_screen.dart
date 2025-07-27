@@ -3,7 +3,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:job_finder_app/core/theme/app_theme.dart';
 import 'package:job_finder_app/core/providers/profile_provider.dart';
+import 'package:job_finder_app/core/widgets/text_field.dart';
+import 'package:job_finder_app/core/widgets/button.dart';
 
 class EditExperienceScreen extends ConsumerStatefulWidget {
   // ignore: use_super_parameters
@@ -58,7 +61,7 @@ class _EditExperienceScreenState extends ConsumerState<EditExperienceScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error: ${e.toString()}'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.error,
         ),
       );
     } finally {
@@ -75,7 +78,7 @@ class _EditExperienceScreenState extends ConsumerState<EditExperienceScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error: ${e.toString()}'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.error,
         ),
       );
     }
@@ -112,11 +115,11 @@ class _EditExperienceScreenState extends ConsumerState<EditExperienceScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edit Experience'),
-        backgroundColor: Colors.grey[50],
+        backgroundColor: AppColors.background,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
+        iconTheme: const IconThemeData(color: AppColors.textPrimary),
       ),
-      backgroundColor: Colors.grey[50],
+      backgroundColor: AppColors.background,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -127,27 +130,19 @@ class _EditExperienceScreenState extends ConsumerState<EditExperienceScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  TextFormField(
+                  AuthTextField(
                     controller: _jobTitleController,
-                    decoration: const InputDecoration(labelText: 'Job Title'),
-                    validator: (v) =>
-                        v == null || v.trim().isEmpty ? 'Required' : null,
+                    label: 'Job Title',
                   ),
                   const SizedBox(height: 10),
-                  TextFormField(
+                  AuthTextField(
                     controller: _companyController,
-                    decoration: const InputDecoration(
-                      labelText: 'Company Name',
-                    ),
-                    validator: (v) =>
-                        v == null || v.trim().isEmpty ? 'Required' : null,
+                    label: 'Company Name',
                   ),
                   const SizedBox(height: 10),
-                  TextFormField(
+                  AuthTextField(
                     controller: _locationController,
-                    decoration: const InputDecoration(
-                      labelText: 'Location (optional)',
-                    ),
+                    label: 'Location (optional)',
                   ),
                   const SizedBox(height: 10),
                   Row(
@@ -192,26 +187,15 @@ class _EditExperienceScreenState extends ConsumerState<EditExperienceScreen> {
                     ],
                   ),
                   const SizedBox(height: 10),
-                  TextFormField(
+                  AuthTextField(
                     controller: _descriptionController,
-                    maxLines: 3,
-                    decoration: const InputDecoration(
-                      labelText: 'Description (optional)',
-                    ),
+                    label: 'Description (optional)',
                   ),
                   const SizedBox(height: 10),
-                  SizedBox(
-                    height: 44,
-                    child: ElevatedButton(
-                      onPressed: _isLoading ? null : _addExperience,
-                      child: _isLoading
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Text('Add Experience'),
-                    ),
+                  PrimaryButton(
+                    text: 'Add Experience',
+                    onPressed: _addExperience,
+                    isLoading: _isLoading,
                   ),
                 ],
               ),
@@ -229,7 +213,7 @@ class _EditExperienceScreenState extends ConsumerState<EditExperienceScreen> {
               data: (items) => items.isEmpty
                   ? const Text(
                       "No experience added yet.",
-                      style: TextStyle(color: Colors.grey),
+                      style: TextStyle(color: AppColors.textSecondary),
                     )
                   : Column(
                       children: items
@@ -254,8 +238,10 @@ class _EditExperienceScreenState extends ConsumerState<EditExperienceScreen> {
                           .toList(),
                     ),
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) =>
-                  Text(e.toString(), style: const TextStyle(color: Colors.red)),
+              error: (e, _) => Text(
+                e.toString(),
+                style: const TextStyle(color: AppColors.error),
+              ),
             ),
           ],
         ),
