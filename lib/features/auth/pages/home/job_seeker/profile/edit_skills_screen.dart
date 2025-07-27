@@ -1,12 +1,14 @@
+// ignore_for_file: unused_result, use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:job_finder_app/core/providers/profile_provider.dart';
-import 'package:job_finder_app/models/user_profile.dart';
 
 final allProficiencyLevels = ['beginner', 'intermediate', 'advanced', 'expert'];
 
 class EditSkillsScreen extends ConsumerStatefulWidget {
+  // ignore: use_super_parameters
   const EditSkillsScreen({Key? key}) : super(key: key);
 
   @override

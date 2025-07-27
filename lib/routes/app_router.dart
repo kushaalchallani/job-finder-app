@@ -6,6 +6,7 @@ import 'package:job_finder_app/features/auth/pages/auth/forgot_password_page.dar
 import 'package:job_finder_app/features/auth/pages/auth/recruiter_sign_up_page.dart';
 import 'package:job_finder_app/features/auth/pages/auth/reset_password_page.dart';
 import 'package:job_finder_app/features/auth/pages/auth/sign_up_page.dart';
+import 'package:job_finder_app/features/auth/pages/home/job_seeker/profile/edit_experience_screen.dart';
 import 'package:job_finder_app/features/auth/pages/home/job_seeker/profile/edit_profile_screen.dart';
 import 'package:job_finder_app/features/auth/pages/home/job_seeker/job_details.dart';
 import 'package:job_finder_app/features/auth/pages/home/job_seeker/job_seeker_main.dart';
@@ -113,6 +114,10 @@ class AppRouter {
       GoRoute(
         path: '/edit-skills',
         builder: (context, state) => const EditSkillsScreen(),
+      ),
+      GoRoute(
+        path: '/edit-experience',
+        builder: (context, state) => const EditExperienceScreen(),
       ),
     ],
     redirect: (context, state) {

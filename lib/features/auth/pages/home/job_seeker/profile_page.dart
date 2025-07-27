@@ -584,7 +584,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               TextButton.icon(
-                onPressed: () => _showComingSoon('Add Experience'),
+                onPressed: () => context.push('/edit-experience'),
                 icon: const Icon(Icons.add, size: 18),
                 label: const Text('Add'),
               ),
@@ -906,17 +906,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           const SizedBox(height: 20),
           Center(child: Text('Error loading $title')),
         ],
-      ),
-    );
-  }
-
-  void _showComingSoon(String feature) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$feature coming soon!'),
-        backgroundColor: const Color(0xFF4A90E2),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
   }
