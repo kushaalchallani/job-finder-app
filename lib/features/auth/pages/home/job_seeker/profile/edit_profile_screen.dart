@@ -1,14 +1,14 @@
-// lib/screens/job_seeker/edit_profile_screen.dart
-// ignore_for_file: deprecated_member_use
-
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:path/path.dart' as path;
 import 'package:job_finder_app/core/providers/profile_provider.dart';
+import 'package:job_finder_app/models/user_profile.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
-  // ignore: use_super_parameters
   const EditProfileScreen({Key? key}) : super(key: key);
 
   @override
@@ -25,13 +25,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   final _linkedinController = TextEditingController();
   final _githubController = TextEditingController();
 
+  File? _profileImageFile;
+  bool _uploadingProfileImage = false;
   bool _isLoading = false;
   bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    // Load current profile data when screen initializes
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadCurrentProfile();
     });
@@ -55,8 +56,76 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     });
   }
 
+  Future<void> _pickAndUploadProfileImage() async {
+    final picker = ImagePicker();
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) return;
+
+    final picked = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 80,
+    );
+
+    if (picked == null) return;
+
+    setState(() {
+      _uploadingProfileImage = true;
+      _profileImageFile = File(picked.path);
+    });
+
+    try {
+      final fileExt = path.extension(picked.path);
+      final fileName =
+          '${user.id}_${DateTime.now().millisecondsSinceEpoch}$fileExt';
+
+      final bytes = await _profileImageFile!.readAsBytes();
+
+      await Supabase.instance.client.storage
+          .from('profiles')
+          .uploadBinary(
+            fileName,
+            bytes,
+            fileOptions: const FileOptions(upsert: true),
+          );
+
+      final imageUrl = Supabase.instance.client.storage
+          .from('profiles')
+          .getPublicUrl(fileName);
+
+      await Supabase.instance.client
+          .from('profiles')
+          .update({'profile_image_url': imageUrl})
+          .eq('id', user.id);
+
+      ref.refresh(userProfileProvider);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Profile photo updated!'),
+            backgroundColor: Color(0xFF50C878),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Image upload error: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      setState(() => _uploadingProfileImage = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final profileAsync = ref.watch(userProfileProvider);
+
+    final remoteProfileImage = profileAsync.asData?.value?.profileImageUrl;
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
@@ -94,17 +163,84 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           const SizedBox(width: 8),
         ],
       ),
-      body: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Form(
+          key: _formKey,
           child: Column(
             children: [
               // Profile Picture Section
-              _buildProfilePictureSection(),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Stack(
+                    alignment: Alignment.bottomRight,
+                    children: [
+                      CircleAvatar(
+                        radius: 48,
+                        backgroundImage: _profileImageFile != null
+                            ? FileImage(_profileImageFile!)
+                            : (remoteProfileImage != null
+                                      ? NetworkImage(remoteProfileImage)
+                                      : null)
+                                  as ImageProvider<Object>?,
+                        child:
+                            _profileImageFile == null &&
+                                remoteProfileImage == null
+                            ? const Icon(
+                                Icons.person,
+                                size: 60,
+                                color: Color(0xFF4A90E2),
+                              )
+                            : null,
+                        backgroundColor: const Color(
+                          0xFF4A90E2,
+                        ).withOpacity(0.09),
+                      ),
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: GestureDetector(
+                          onTap: _uploadingProfileImage
+                              ? null
+                              : _pickAndUploadProfileImage,
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF4A90E2),
+                              shape: BoxShape.circle,
+                            ),
+                            padding: const EdgeInsets.all(8),
+                            child: _uploadingProfileImage
+                                ? const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white,
+                                      ),
+                                    ),
+                                  )
+                                : const Icon(
+                                    Icons.camera_alt,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'Profile Picture',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
               const SizedBox(height: 24),
 
-              // Basic Information
+              // Main Form
               _buildSectionCard('Basic Information', [
                 _buildInputField(
                   'Full Name',
@@ -127,7 +263,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               ]),
               const SizedBox(height: 20),
 
-              // About Section
               _buildSectionCard('About', [
                 _buildInputField(
                   'Bio',
@@ -138,7 +273,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               ]),
               const SizedBox(height: 20),
 
-              // Links Section
               _buildSectionCard('Links', [
                 _buildInputField(
                   'Website',
@@ -162,73 +296,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildProfilePictureSection() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Stack(
-            children: [
-              Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF4A90E2).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(50),
-                ),
-                child: const Icon(
-                  Icons.person,
-                  size: 50,
-                  color: Color(0xFF4A90E2),
-                ),
-              ),
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: GestureDetector(
-                  onTap: () => _showComingSoon('Profile Picture Upload'),
-                  child: Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF4A90E2),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.camera_alt,
-                      color: Colors.white,
-                      size: 16,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'Profile Picture',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Upload a professional photo',
-            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-          ),
-        ],
       ),
     );
   }
@@ -350,21 +417,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               : _githubController.text.trim(),
         };
 
-        // Direct update approach (not function)
-        final response = await supabase
-            .from('profiles')
-            .update(profileData)
-            .eq('id', user.id)
-            .select();
-
-        if (response.isEmpty) {
-          throw Exception('No profile found to update - check RLS policies');
-        }
+        await supabase.from('profiles').update(profileData).eq('id', user.id);
 
         if (mounted) {
-          // ignore: unused_result
           ref.refresh(userProfileProvider);
-
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Profile updated successfully!'),
@@ -372,14 +428,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               behavior: SnackBarBehavior.floating,
             ),
           );
-
           context.pop();
         }
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Error: ${e.toString()}'),
+              content: Text('Error updating profile: ${e.toString()}'),
               backgroundColor: Colors.red,
               behavior: SnackBarBehavior.floating,
             ),
@@ -393,16 +448,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         }
       }
     }
-  }
-
-  void _showComingSoon(String feature) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$feature coming soon!'),
-        backgroundColor: const Color(0xFF4A90E2),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
   }
 
   @override
