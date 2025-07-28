@@ -39,6 +39,7 @@ class AppColors {
   // Brand Colors (from your existing design)
   static const brandGreen = Color(0xFF2E5233);
   static const brandBlue = Color(0xFF4A90E2);
+  static const brandPurple = Color(0xFF9B59B6);
 
   // Utility Colors
   static const transparent = Colors.transparent;
@@ -55,6 +56,11 @@ class AppColors {
   static const grey700 = Color(0xFF374151);
   static const grey800 = Color(0xFF1F2937);
   static const grey900 = Color(0xFF111827);
+
+  static const profileGradientStart = Color(0xFFE8A87C);
+  static const profileGradientEnd = Color(0xFFC27D5C);
+  static const grey = grey400;
+  static const blueGrey = Color(0xFF607D8B);
 }
 
 ThemeData get appLightTheme => ThemeData(

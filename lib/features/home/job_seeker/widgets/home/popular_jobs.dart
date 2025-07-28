@@ -1,3 +1,5 @@
+// ignore_for_file: use_super_parameters
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:job_finder_app/core/theme/app_theme.dart';
@@ -111,6 +113,7 @@ class PopularJobs extends StatelessWidget {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
+                            // ignore: deprecated_member_use
                             color: AppColors.primary.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),

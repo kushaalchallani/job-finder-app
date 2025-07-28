@@ -62,7 +62,7 @@ class _MyAppState extends ConsumerState<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    ref.watch(authRedirectProvider); // 👈 Important
+    ref.watch(authRedirectProvider);
 
     return MaterialApp.router(
       title: 'Job Finder',

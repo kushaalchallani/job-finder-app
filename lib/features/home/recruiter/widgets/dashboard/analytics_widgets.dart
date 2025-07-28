@@ -1,10 +1,13 @@
+// ignore_for_file: deprecated_member_use, unnecessary_to_list_in_spreads
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:job_finder_app/core/providers/recruiter_analytics_provider.dart';
-import 'package:job_finder_app/models/job_application.dart';
 import 'dart:async';
+import 'package:job_finder_app/core/theme/app_theme.dart';
 
 class AnalyticsOverview extends ConsumerStatefulWidget {
+  // ignore: use_super_parameters
   const AnalyticsOverview({Key? key}) : super(key: key);
 
   @override
@@ -44,23 +47,23 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.black,
+                color: AppColors.textPrimary,
               ),
             ),
             Row(
               children: [
-                Icon(Icons.sync, size: 16, color: Colors.grey[600]),
+                Icon(Icons.sync, size: 16, color: AppColors.grey600),
                 const SizedBox(width: 4),
                 Text(
                   'Auto-refresh 30s',
-                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  style: TextStyle(fontSize: 12, color: AppColors.grey600),
                 ),
                 const SizedBox(width: 8),
                 IconButton(
                   onPressed: () {
                     ref.invalidate(recruiterAnalyticsProvider);
                   },
-                  icon: const Icon(Icons.refresh, color: Colors.blue),
+                  icon: const Icon(Icons.refresh, color: AppColors.primary),
                   tooltip: 'Refresh Analytics',
                 ),
               ],
@@ -80,7 +83,7 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
                       'Total Jobs',
                       '${analytics.totalJobs}',
                       Icons.work,
-                      Colors.blue,
+                      AppColors.primary,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -89,7 +92,7 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
                       'Total Applications',
                       '${analytics.totalApplications}',
                       Icons.people,
-                      Colors.green,
+                      AppColors.success,
                     ),
                   ),
                 ],
@@ -102,7 +105,7 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
                       'Total Views',
                       '${analytics.totalViews}',
                       Icons.visibility,
-                      Colors.orange,
+                      AppColors.warning,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -111,7 +114,7 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
                       'Avg. Time to Fill',
                       '${analytics.averageTimeToFill.toStringAsFixed(1)} days',
                       Icons.schedule,
-                      Colors.purple,
+                      AppColors.brandPurple,
                     ),
                   ),
                 ],
@@ -138,7 +141,7 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
           error: (error, stack) => Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.onPrimary,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Text('Error loading analytics: ${error.toString()}'),
@@ -157,11 +160,11 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.onPrimary,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: AppColors.textPrimary.withOpacity(0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -189,7 +192,7 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Colors.black,
+              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 4),
@@ -197,7 +200,7 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
             title,
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey[600],
+              color: AppColors.grey600,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -210,11 +213,11 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.onPrimary,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: AppColors.textPrimary.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -228,7 +231,7 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Colors.black,
+              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 16),
@@ -238,7 +241,7 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
                 child: _buildConversionRateItem(
                   'Overall',
                   conversionRates['overall'] ?? 0,
-                  Colors.blue,
+                  AppColors.primary,
                 ),
               ),
               const SizedBox(width: 16),
@@ -246,7 +249,7 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
                 child: _buildConversionRateItem(
                   'This Month',
                   conversionRates['this_month'] ?? 0,
-                  Colors.green,
+                  AppColors.success,
                 ),
               ),
               const SizedBox(width: 16),
@@ -254,7 +257,7 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
                 child: _buildConversionRateItem(
                   'Last Month',
                   conversionRates['last_month'] ?? 0,
-                  Colors.orange,
+                  AppColors.warning,
                 ),
               ),
             ],
@@ -276,7 +279,7 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
           ),
         ),
         const SizedBox(height: 4),
-        Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+        Text(label, style: TextStyle(fontSize: 12, color: AppColors.grey600)),
       ],
     );
   }
@@ -287,7 +290,7 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
       return Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.onPrimary,
           borderRadius: BorderRadius.circular(16),
         ),
         child: const Center(child: Text('No applications yet')),
@@ -297,11 +300,11 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.onPrimary,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: AppColors.textPrimary.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -315,7 +318,7 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Colors.black,
+              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 16),
@@ -347,14 +350,14 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
               ),
               Text(
                 '$count (${percentage.toStringAsFixed(1)}%)',
-                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                style: TextStyle(fontSize: 14, color: AppColors.grey600),
               ),
             ],
           ),
           const SizedBox(height: 8),
           LinearProgressIndicator(
             value: percentage / 100,
-            backgroundColor: Colors.grey[200],
+            backgroundColor: AppColors.grey200,
             valueColor: AlwaysStoppedAnimation<Color>(color),
             minHeight: 8,
           ),
@@ -366,17 +369,17 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
       case 'pending':
-        return Colors.orange;
+        return AppColors.warning;
       case 'reviewed':
-        return Colors.blue;
+        return AppColors.info;
       case 'shortlisted':
-        return Colors.purple;
+        return AppColors.brandPurple;
       case 'rejected':
-        return Colors.red;
+        return AppColors.error;
       case 'accepted':
-        return Colors.green;
+        return AppColors.success;
       default:
-        return Colors.grey;
+        return AppColors.grey;
     }
   }
 
@@ -390,7 +393,7 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
       return Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.onPrimary,
           borderRadius: BorderRadius.circular(16),
         ),
         child: const Center(child: Text('No trend data available')),
@@ -400,11 +403,11 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.onPrimary,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: AppColors.textPrimary.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -418,7 +421,7 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Colors.black,
+              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 16),
@@ -450,14 +453,14 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
                       width: 20,
                       height: 120 * height,
                       decoration: BoxDecoration(
-                        color: Colors.blue,
+                        color: AppColors.primary,
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       trend.week,
-                      style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+                      style: TextStyle(fontSize: 10, color: AppColors.grey600),
                     ),
                   ],
                 );
@@ -474,7 +477,7 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
       return Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.onPrimary,
           borderRadius: BorderRadius.circular(16),
         ),
         child: const Center(child: Text('No job performance data available')),
@@ -484,11 +487,11 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.onPrimary,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: AppColors.textPrimary.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -502,7 +505,7 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Colors.black,
+              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 16),
@@ -517,9 +520,9 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        color: AppColors.grey50,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!),
+        border: Border.all(color: AppColors.grey200),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -529,7 +532,7 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: Colors.black,
+              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 8),
@@ -550,11 +553,13 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
               color: job.status == 'active'
-                  ? Colors.green.withOpacity(0.1)
-                  : Colors.grey.withOpacity(0.1),
+                  ? AppColors.success.withOpacity(0.1)
+                  : AppColors.grey.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: job.status == 'active' ? Colors.green : Colors.grey,
+                color: job.status == 'active'
+                    ? AppColors.success
+                    : AppColors.grey,
               ),
             ),
             child: Text(
@@ -562,7 +567,9 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: job.status == 'active' ? Colors.green : Colors.grey,
+                color: job.status == 'active'
+                    ? AppColors.success
+                    : AppColors.grey,
               ),
             ),
           ),
@@ -580,10 +587,10 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
           style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
-            color: Colors.black,
+            color: AppColors.textPrimary,
           ),
         ),
-        Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+        Text(label, style: TextStyle(fontSize: 12, color: AppColors.grey600)),
       ],
     );
   }

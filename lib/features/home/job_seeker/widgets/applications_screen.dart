@@ -5,6 +5,7 @@ import 'package:job_finder_app/core/providers/application_provider.dart';
 import 'package:job_finder_app/models/job_application.dart';
 
 class ApplicationsScreen extends ConsumerWidget {
+  // ignore: use_super_parameters
   const ApplicationsScreen({Key? key}) : super(key: key);
 
   @override
@@ -291,6 +292,7 @@ class ApplicationsScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
+        // ignore: deprecated_member_use
         color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: color),

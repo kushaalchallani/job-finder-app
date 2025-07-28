@@ -15,6 +15,7 @@ class FilterChips extends StatelessWidget {
   Widget build(BuildContext context) {
     final filters = ['All', 'full-time', 'part-time', 'remote', 'contract'];
 
+    // ignore: sized_box_for_whitespace
     return Container(
       height: 50,
       child: ListView.builder(

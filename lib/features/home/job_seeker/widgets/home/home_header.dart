@@ -4,6 +4,7 @@ import 'package:job_finder_app/core/theme/app_theme.dart';
 class HomeHeader extends StatelessWidget {
   final String userName;
 
+  // ignore: use_super_parameters
   const HomeHeader({
     Key? key,
     this.userName = 'John Doe', // You can make this dynamic later

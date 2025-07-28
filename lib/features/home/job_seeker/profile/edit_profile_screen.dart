@@ -10,6 +10,7 @@ import 'package:path/path.dart' as path;
 import 'package:job_finder_app/core/theme/app_theme.dart';
 import 'package:job_finder_app/core/providers/profile_provider.dart';
 import 'package:job_finder_app/core/widgets/text_field.dart';
+import 'package:job_finder_app/core/widgets/button.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   // ignore: use_super_parameters
@@ -148,21 +149,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           onPressed: () => context.pop(),
         ),
         actions: [
-          TextButton(
-            onPressed: _isLoading ? null : _saveProfile,
-            child: _isLoading
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Text(
-                    'Save',
-                    style: TextStyle(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+          PrimaryButton(
+            text: 'Save',
+            onPressed: _saveProfile,
+            isLoading: _isLoading,
           ),
           const SizedBox(width: 8),
         ],

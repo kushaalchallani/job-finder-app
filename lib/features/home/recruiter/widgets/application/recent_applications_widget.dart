@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:job_finder_app/core/providers/recruiter_analytics_provider.dart';
+import 'package:job_finder_app/core/theme/app_theme.dart';
 import 'package:job_finder_app/models/job_application.dart';
 
 class RecentApplicationsWidget extends ConsumerWidget {
@@ -17,11 +18,11 @@ class RecentApplicationsWidget extends ConsumerWidget {
           return Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.onPrimary,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: AppColors.textPrimary.withOpacity(0.05),
                   blurRadius: 10,
                   offset: const Offset(0, 2),
                 ),
@@ -29,20 +30,20 @@ class RecentApplicationsWidget extends ConsumerWidget {
             ),
             child: const Column(
               children: [
-                Icon(Icons.people_outline, size: 48, color: Colors.grey),
+                Icon(Icons.people_outline, size: 48, color: AppColors.grey400),
                 SizedBox(height: 16),
                 Text(
                   'No Recent Applications',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 SizedBox(height: 8),
                 Text(
                   'Applications will appear here once candidates start applying',
-                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                  style: TextStyle(fontSize: 14, color: AppColors.grey400),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -53,11 +54,11 @@ class RecentApplicationsWidget extends ConsumerWidget {
         return Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.onPrimary,
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: AppColors.textPrimary.withOpacity(0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 2),
               ),
@@ -74,7 +75,7 @@ class RecentApplicationsWidget extends ConsumerWidget {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   Row(
@@ -85,7 +86,7 @@ class RecentApplicationsWidget extends ConsumerWidget {
                         },
                         icon: const Icon(
                           Icons.refresh,
-                          color: Colors.blue,
+                          color: AppColors.primary,
                           size: 20,
                         ),
                         tooltip: 'Refresh Applications',
@@ -112,7 +113,7 @@ class RecentApplicationsWidget extends ConsumerWidget {
       loading: () => Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.onPrimary,
           borderRadius: BorderRadius.circular(16),
         ),
         child: const Center(child: CircularProgressIndicator()),
@@ -120,7 +121,7 @@ class RecentApplicationsWidget extends ConsumerWidget {
       error: (error, stack) => Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.onPrimary,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Text('Error loading applications: ${error.toString()}'),
@@ -133,9 +134,9 @@ class RecentApplicationsWidget extends ConsumerWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        color: AppColors.grey50,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!),
+        border: Border.all(color: AppColors.grey200),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -148,12 +149,19 @@ class RecentApplicationsWidget extends ConsumerWidget {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
                   gradient: const LinearGradient(
-                    colors: [Color(0xFFE8A87C), Color(0xFFC27D5C)],
+                    colors: [
+                      AppColors.profileGradientStart,
+                      AppColors.profileGradientEnd,
+                    ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                 ),
-                child: const Icon(Icons.person, color: Colors.white, size: 20),
+                child: const Icon(
+                  Icons.person,
+                  color: AppColors.onPrimary,
+                  size: 20,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -165,13 +173,13 @@ class RecentApplicationsWidget extends ConsumerWidget {
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: Colors.black,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       application.jobTitle,
-                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                      style: TextStyle(fontSize: 14, color: AppColors.grey600),
                     ),
                   ],
                 ),
@@ -182,12 +190,12 @@ class RecentApplicationsWidget extends ConsumerWidget {
           const SizedBox(height: 12),
           Row(
             children: [
-              Icon(Icons.email, size: 16, color: Colors.grey[600]),
+              Icon(Icons.email, size: 16, color: AppColors.grey600),
               const SizedBox(width: 4),
               Expanded(
                 child: Text(
                   application.userEmail,
-                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                  style: TextStyle(fontSize: 14, color: AppColors.grey600),
                 ),
               ),
             ],
@@ -195,16 +203,16 @@ class RecentApplicationsWidget extends ConsumerWidget {
           const SizedBox(height: 8),
           Row(
             children: [
-              Icon(Icons.schedule, size: 16, color: Colors.grey[600]),
+              Icon(Icons.schedule, size: 16, color: AppColors.grey600),
               const SizedBox(width: 4),
               Text(
                 _formatDate(application.appliedAt),
-                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                style: TextStyle(fontSize: 14, color: AppColors.grey600),
               ),
               const Spacer(),
               Text(
                 'Applied ${_getTimeAgo(application.appliedAt)}',
-                style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                style: TextStyle(fontSize: 12, color: AppColors.grey500),
               ),
             ],
           ),
@@ -219,27 +227,27 @@ class RecentApplicationsWidget extends ConsumerWidget {
 
     switch (status.toLowerCase()) {
       case 'pending':
-        color = Colors.orange;
+        color = AppColors.warning;
         label = 'Pending';
         break;
       case 'reviewed':
-        color = Colors.blue;
+        color = AppColors.info;
         label = 'Reviewed';
         break;
       case 'shortlisted':
-        color = Colors.purple;
+        color = AppColors.brandPurple;
         label = 'Shortlisted';
         break;
       case 'rejected':
-        color = Colors.red;
+        color = AppColors.error;
         label = 'Rejected';
         break;
       case 'accepted':
-        color = Colors.green;
+        color = AppColors.success;
         label = 'Accepted';
         break;
       default:
-        color = Colors.grey;
+        color = AppColors.grey400;
         label = status;
     }
 

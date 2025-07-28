@@ -8,11 +8,7 @@ final userProfileProvider = FutureProvider<UserProfile?>((ref) async {
   final supabase = Supabase.instance.client;
   final user = supabase.auth.currentUser;
 
-  print('[DEBUG] Current user id: ${user?.id}');
-  print('[DEBUG] User id type: ${user?.id.runtimeType}');
-
   if (user == null) {
-    print('[DEBUG] No authenticated user found.');
     return null;
   }
 
@@ -21,8 +17,6 @@ final userProfileProvider = FutureProvider<UserProfile?>((ref) async {
       .select()
       .eq('id', user.id)
       .single();
-  print('[DEBUG] UserProfile response:');
-  print(response);
   return UserProfile.fromJson(response);
 });
 
@@ -33,11 +27,7 @@ final userExperiencesProvider = FutureProvider<List<UserExperience>>((
   final supabase = Supabase.instance.client;
   final user = supabase.auth.currentUser;
 
-  print('[DEBUG] Current user id: ${user?.id}');
-  print('[DEBUG] User id type: ${user?.id.runtimeType}');
-
   if (user == null) {
-    print('[DEBUG] No authenticated user found for experiences.');
     return [];
   }
 
@@ -46,8 +36,6 @@ final userExperiencesProvider = FutureProvider<List<UserExperience>>((
       .select()
       .eq('user_id', user.id)
       .order('start_date', ascending: false);
-  print('[DEBUG] UserExperiences response:');
-  print(response);
   return response.map((exp) => UserExperience.fromJson(exp)).toList();
 });
 
@@ -56,11 +44,7 @@ final userSkillsProvider = FutureProvider<List<UserSkill>>((ref) async {
   final supabase = Supabase.instance.client;
   final user = supabase.auth.currentUser;
 
-  print('[DEBUG] Current user id: ${user?.id}');
-  print('[DEBUG] User id type: ${user?.id.runtimeType}');
-
   if (user == null) {
-    print('[DEBUG] No authenticated user found for skills.');
     return [];
   }
 
@@ -69,8 +53,6 @@ final userSkillsProvider = FutureProvider<List<UserSkill>>((ref) async {
       .select()
       .eq('user_id', user.id)
       .order('created_at', ascending: false);
-  print('[DEBUG] UserSkills response:');
-  print(response);
   return response.map((skill) => UserSkill.fromJson(skill)).toList();
 });
 
@@ -79,11 +61,7 @@ final userResumesProvider = FutureProvider<List<UserResume>>((ref) async {
   final supabase = Supabase.instance.client;
   final user = supabase.auth.currentUser;
 
-  print('[DEBUG] Current user id: ${user?.id}');
-  print('[DEBUG] User id type: ${user?.id.runtimeType}');
-
   if (user == null) {
-    print('[DEBUG] No authenticated user found for resumes.');
     return [];
   }
 
@@ -92,8 +70,6 @@ final userResumesProvider = FutureProvider<List<UserResume>>((ref) async {
       .select()
       .eq('user_id', user.id)
       .order('uploaded_at', ascending: false);
-  print('[DEBUG] UserResumes response:');
-  print(response);
   return response.map((resume) => UserResume.fromJson(resume)).toList();
 });
 

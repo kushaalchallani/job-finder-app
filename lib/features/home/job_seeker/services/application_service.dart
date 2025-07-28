@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_null_comparison
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:job_finder_app/models/job_application.dart';
 import 'package:job_finder_app/models/job_opening.dart';
@@ -116,7 +118,7 @@ class ApplicationService {
     }
   }
 
-  /// Update application status (for recruiters)
+  /// Update application status
   static Future<JobApplication?> updateApplicationStatus({
     required String applicationId,
     required String status,
