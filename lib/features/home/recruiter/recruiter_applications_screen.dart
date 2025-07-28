@@ -48,12 +48,6 @@ class _RecruiterApplicationsScreenState
         ),
         backgroundColor: AppColors.background,
         elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.filter_list, color: AppColors.textPrimary),
-            onPressed: _showFilterDialog,
-          ),
-        ],
       ),
       body: Column(
         children: [
@@ -63,9 +57,19 @@ class _RecruiterApplicationsScreenState
           // Applications List
           Expanded(
             child: allApplicationsAsync.when(
-              data: (applications) => _buildApplicationsList(applications),
+              data: (applications) => RefreshIndicator(
+                onRefresh: () async {
+                  ref.invalidate(_allRecruiterApplicationsProvider);
+                },
+                child: _buildApplicationsList(applications),
+              ),
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, stack) => _buildErrorState(error.toString()),
+              error: (error, stack) => RefreshIndicator(
+                onRefresh: () async {
+                  ref.invalidate(_allRecruiterApplicationsProvider);
+                },
+                child: _buildErrorState(error.toString()),
+              ),
             ),
           ),
         ],
@@ -80,30 +84,50 @@ class _RecruiterApplicationsScreenState
         scrollDirection: Axis.horizontal,
         child: Row(
           children: [
-            _buildFilterChip('All', _selectedStatus == 'All'),
+            _buildFilterChip('All', 'All', _selectedStatus == 'All'),
             const SizedBox(width: 8),
-            _buildFilterChip('Pending', _selectedStatus == 'pending'),
+            _buildFilterChip(
+              'Pending',
+              'pending',
+              _selectedStatus == 'pending',
+            ),
             const SizedBox(width: 8),
-            _buildFilterChip('Reviewed', _selectedStatus == 'reviewed'),
+            _buildFilterChip(
+              'Reviewed',
+              'reviewed',
+              _selectedStatus == 'reviewed',
+            ),
             const SizedBox(width: 8),
-            _buildFilterChip('Shortlisted', _selectedStatus == 'shortlisted'),
+            _buildFilterChip(
+              'Shortlisted',
+              'shortlisted',
+              _selectedStatus == 'shortlisted',
+            ),
             const SizedBox(width: 8),
-            _buildFilterChip('Rejected', _selectedStatus == 'rejected'),
+            _buildFilterChip(
+              'Rejected',
+              'rejected',
+              _selectedStatus == 'rejected',
+            ),
             const SizedBox(width: 8),
-            _buildFilterChip('Accepted', _selectedStatus == 'accepted'),
+            _buildFilterChip(
+              'Accepted',
+              'accepted',
+              _selectedStatus == 'accepted',
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildFilterChip(String label, bool isSelected) {
+  Widget _buildFilterChip(String label, String value, bool isSelected) {
     return FilterChip(
       label: Text(label),
       selected: isSelected,
       onSelected: (selected) {
         setState(() {
-          _selectedStatus = selected ? label : 'All';
+          _selectedStatus = selected ? value : 'All';
         });
       },
       selectedColor: AppColors.primary.withOpacity(0.2),
@@ -367,90 +391,67 @@ class _RecruiterApplicationsScreenState
   }
 
   Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.inbox_outlined, size: 64, color: AppColors.grey400),
-          const SizedBox(height: 16),
-          const Text(
-            'No Applications Found',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
-            ),
+    return ListView(
+      children: [
+        SizedBox(height: MediaQuery.of(context).size.height * 0.3),
+        Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.inbox_outlined, size: 64, color: AppColors.grey400),
+              const SizedBox(height: 16),
+              const Text(
+                'No Applications Found',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Applications will appear here once candidates apply to your jobs',
+                style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                textAlign: TextAlign.center,
+              ),
+            ],
           ),
-          const SizedBox(height: 8),
-          const Text(
-            'Applications will appear here once candidates apply to your jobs',
-            style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   Widget _buildErrorState(String error) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.error_outline, size: 64, color: AppColors.error),
-          const SizedBox(height: 16),
-          const Text(
-            'Error Loading Applications',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
-            ),
+    return ListView(
+      children: [
+        SizedBox(height: MediaQuery.of(context).size.height * 0.3),
+        Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.error_outline, size: 64, color: AppColors.error),
+              const SizedBox(height: 16),
+              const Text(
+                'Error Loading Applications',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                error,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textSecondary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            error,
-            style: const TextStyle(
-              fontSize: 14,
-              color: AppColors.textSecondary,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showFilterDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Filter Applications'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Filter by Job:'),
-            const SizedBox(height: 8),
-            // Add job filter dropdown here
-            const Text('Filter by Status:'),
-            const SizedBox(height: 8),
-            // Add status filter dropdown here
-          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // Apply filters
-            },
-            child: const Text('Apply'),
-          ),
-        ],
-      ),
+      ],
     );
   }
 
@@ -582,13 +583,45 @@ final _allRecruiterApplicationsProvider = FutureProvider<List<JobApplication>>((
     // Get all applications for these jobs
     final jobIds = jobs.map((job) => job['id']).toList();
 
-    final applications = await Supabase.instance.client
+    final applicationsResponse = await Supabase.instance.client
         .from('job_applications')
-        .select()
+        .select('*')
         .inFilter('job_id', jobIds)
         .order('applied_at', ascending: false);
 
-    return applications.map((app) => JobApplication.fromJson(app)).toList();
+    final List<JobApplication> applications = [];
+
+    for (final app in applicationsResponse) {
+      // Fetch job details
+      final jobResponse = await Supabase.instance.client
+          .from('job_openings')
+          .select('title, company_name, location')
+          .eq('id', app['job_id'])
+          .single();
+
+      // Fetch user profile
+      final profileResponse = await Supabase.instance.client
+          .from('profiles')
+          .select('full_name, email, phone, location')
+          .eq('id', app['user_id'])
+          .maybeSingle();
+
+      // Combine the data
+      final combinedData = {
+        ...app,
+        'job_title': jobResponse['title'],
+        'company_name': jobResponse['company_name'],
+        'job_location': jobResponse['location'],
+        'user_full_name': profileResponse?['full_name'] ?? 'Unknown User',
+        'user_email': profileResponse?['email'] ?? 'No email',
+        'user_phone': profileResponse?['phone'],
+        'user_location': profileResponse?['location'],
+      };
+
+      applications.add(JobApplication.fromJson(combinedData));
+    }
+
+    return applications;
   } catch (e) {
     throw Exception('Failed to fetch applications: $e');
   }
