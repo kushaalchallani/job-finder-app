@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:job_finder_app/features/home/recruiter/create_job.dart';
 import 'package:job_finder_app/features/home/recruiter/recruiter_dashboard.dart';
+import 'package:job_finder_app/features/home/recruiter/recruiter_applications_screen.dart';
 
 class RecruiterMainScreen extends ConsumerStatefulWidget {
   // ignore: use_super_parameters
@@ -19,7 +20,7 @@ class _RecruiterMainScreenState extends ConsumerState<RecruiterMainScreen> {
   final List<Widget> _tabs = [
     const RecruiterDashboard(),
     const CreateJobScreen(),
-    // const ApplicationsTab(), // You'll create this later
+    const RecruiterApplicationsScreen(),
     // const ProfileTab(),      // You'll create this later
   ];
 

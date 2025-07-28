@@ -13,7 +13,13 @@ import 'package:job_finder_app/features/home/job_seeker/job_details.dart';
 import 'package:job_finder_app/features/home/job_seeker/job_seeker_main.dart';
 import 'package:job_finder_app/features/home/job_seeker/profile/edit_skills_screen.dart';
 import 'package:job_finder_app/features/home/job_seeker/profile/upload_resume_screen.dart';
+import 'package:job_finder_app/features/home/job_seeker/widgets/applications_screen.dart';
+import 'package:job_finder_app/features/home/recruiter/manage_applications.dart';
+import 'package:job_finder_app/features/home/recruiter/recruiter_applications_screen.dart';
+import 'package:job_finder_app/features/home/recruiter/applicant_profile_screen.dart';
 import 'package:job_finder_app/features/home/recruiter/create_job.dart';
+import 'package:job_finder_app/models/job_opening.dart';
+import 'package:job_finder_app/models/job_application.dart';
 import 'package:job_finder_app/features/home/recruiter/recruiter_main.dart';
 import 'package:job_finder_app/features/home/recruiter/recruiter_dashboard.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -88,6 +94,19 @@ class AppRouter {
         builder: (context, state) => const RecruiterMainScreen(),
       ),
       GoRoute(
+        path: '/recruiter-applications',
+        name: 'recruiter-applications',
+        builder: (context, state) => const RecruiterApplicationsScreen(),
+      ),
+      GoRoute(
+        path: '/applicant-profile',
+        name: 'applicant-profile',
+        builder: (context, state) {
+          final application = state.extra as JobApplication;
+          return ApplicantProfileScreen(application: application);
+        },
+      ),
+      GoRoute(
         path: '/recruiter-dashboard',
         name: 'recruiter-dashboard',
         builder: (context, state) => const RecruiterDashboard(),
@@ -123,6 +142,35 @@ class AppRouter {
       GoRoute(
         path: '/edit-education',
         builder: (context, state) => const EditEducationScreen(),
+      ),
+      GoRoute(
+        path: '/applications',
+        name: 'applications',
+        builder: (context, state) => const ApplicationsScreen(),
+      ),
+      GoRoute(
+        path: '/manage-applications/:jobId',
+        name: 'manage-applications',
+        builder: (context, state) {
+          final jobId = state.pathParameters['jobId']!;
+
+          final job = JobOpening(
+            id: jobId,
+            recruiterId: '',
+            title: 'Job Title',
+            companyName: 'Company Name',
+            location: 'Location',
+            jobType: 'Full-time',
+            experienceLevel: 'Mid-level',
+            description: 'Job description',
+            requirements: [],
+            benefits: [],
+            status: 'active',
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+          );
+          return ManageApplicationsScreen(jobId: jobId, job: job);
+        },
       ),
     ],
     redirect: (context, state) {

@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:job_finder_app/core/theme/app_theme.dart';
 import 'package:job_finder_app/core/widgets/button.dart';
+import 'package:job_finder_app/core/providers/application_provider.dart';
+import 'package:job_finder_app/models/job_opening.dart';
 
-class JobActions extends StatefulWidget {
+class JobActions extends ConsumerStatefulWidget {
   final VoidCallback onApply;
+  final JobOpening job;
 
-  const JobActions({Key? key, required this.onApply}) : super(key: key);
+  const JobActions({Key? key, required this.onApply, required this.job})
+    : super(key: key);
 
   @override
-  State<JobActions> createState() => _JobActionsState();
+  ConsumerState<JobActions> createState() => _JobActionsState();
 }
 
-class _JobActionsState extends State<JobActions> {
+class _JobActionsState extends ConsumerState<JobActions> {
   bool _isSaved = false;
   bool _isApplying = false;
 
@@ -122,23 +127,49 @@ class _JobActionsState extends State<JobActions> {
       _isApplying = true;
     });
 
-    // Simulate API call - replace with actual application logic later
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      final success = await ref
+          .read(applicationNotifierProvider.notifier)
+          .applyForJob(jobId: widget.job.id);
 
-    if (mounted) {
-      setState(() {
-        _isApplying = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isApplying = false;
+        });
 
-      widget.onApply();
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Application submitted successfully!'),
-          backgroundColor: AppColors.success,
-          duration: Duration(seconds: 3),
-        ),
-      );
+        if (success) {
+          widget.onApply();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Application submitted successfully!'),
+              backgroundColor: AppColors.success,
+              duration: Duration(seconds: 3),
+            ),
+          );
+        } else {
+          final error = ref.read(applicationNotifierProvider).error;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(error ?? 'Failed to submit application'),
+              backgroundColor: AppColors.error,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isApplying = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: AppColors.error,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
     }
   }
 }

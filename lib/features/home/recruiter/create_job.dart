@@ -49,10 +49,7 @@ class _CreateJobScreenState extends ConsumerState<CreateJobScreen> {
         ),
         backgroundColor: AppColors.background,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => context.pop(), // Fixed to use Go Router
-        ),
+
         actions: [
           // Added Save Draft functionality
           TextButton(

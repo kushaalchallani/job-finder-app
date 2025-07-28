@@ -99,6 +99,7 @@ class _JobDetailsScreenState extends ConsumerState<JobDetailsScreen> {
 
         // Bottom Action Buttons
         JobActions(
+          job: job,
           onApply: () {
             // Handle successful application
             // You can add navigation or other logic here
