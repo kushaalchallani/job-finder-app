@@ -56,13 +56,23 @@ class JobApplication {
       coverLetter: json['cover_letter'],
       resumeUrl: json['resume_url'],
       resumeFileName: json['resume_file_name'],
-      jobTitle: json['job_title'],
-      companyName: json['company_name'],
-      jobLocation: json['job_location'],
-      userFullName: json['user_full_name'],
-      userEmail: json['user_email'],
-      userPhone: json['user_phone'],
-      userLocation: json['user_location'],
+      jobTitle:
+          json['job_openings']?['title'] ?? json['job_title'] ?? 'Unknown Job',
+      companyName:
+          json['job_openings']?['company_name'] ??
+          json['company_name'] ??
+          'Unknown Company',
+      jobLocation:
+          json['job_openings']?['location'] ??
+          json['job_location'] ??
+          'Unknown Location',
+      userFullName:
+          json['profiles']?['full_name'] ??
+          json['user_full_name'] ??
+          'Unknown User',
+      userEmail: json['profiles']?['email'] ?? json['user_email'] ?? 'No email',
+      userPhone: json['profiles']?['phone'] ?? json['user_phone'],
+      userLocation: json['profiles']?['location'] ?? json['user_location'],
     );
   }
 

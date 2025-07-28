@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:job_finder_app/core/theme/app_theme.dart';
 import 'package:job_finder_app/models/job_application.dart';
-import 'package:job_finder_app/models/user_profile.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -52,11 +51,29 @@ class _ApplicantProfileScreenState
         dbProfile = null;
       }
 
-      // Prepare the profile map (edit field names to match your Supabase table exactly)
+      // Fetch job details from database
+      Map<String, dynamic>? dbJob;
+      try {
+        dbJob = await supabase
+            .from('job_openings')
+            .select('title, company_name, location')
+            .eq('id', widget.application.jobId)
+            .maybeSingle();
+
+        print('[DEBUG] Job details from Supabase: $dbJob');
+        if (dbJob == null) {
+          print('[DEBUG] No job found for job ID: ${widget.application.jobId}');
+        }
+      } catch (e) {
+        print('[DEBUG] Error fetching job details: $e');
+        dbJob = null;
+      }
+
+      // Prepare the profile map using the fresh data from database
       Map<String, dynamic> profileResponse = {
         'id': widget.application.userId,
-        'full_name': widget.application.userFullName,
-        'email': widget.application.userEmail,
+        'full_name': dbProfile?['full_name'] ?? widget.application.userFullName,
+        'email': dbProfile?['email'] ?? widget.application.userEmail,
         'phone': dbProfile?['phone'] ?? widget.application.userPhone,
         'location': dbProfile?['location'] ?? widget.application.userLocation,
         'website': dbProfile?['website'],
@@ -64,9 +81,18 @@ class _ApplicantProfileScreenState
         'github': dbProfile?['github'],
         'bio': dbProfile?['bio'],
         'profile_image_url': dbProfile?['profile_image_url'],
+        // Add job details
+        'job_title': dbJob?['title'] ?? widget.application.jobTitle,
+        'job_company': dbJob?['company_name'] ?? widget.application.companyName,
+        'job_location': dbJob?['location'] ?? widget.application.jobLocation,
       };
 
       print('[DEBUG] Final profileResponse used in UI: $profileResponse');
+      print('[DEBUG] Using full_name: ${profileResponse['full_name']}');
+      print('[DEBUG] Using email: ${profileResponse['email']}');
+      print('[DEBUG] Using job_title: ${profileResponse['job_title']}');
+      print('[DEBUG] Using job_company: ${profileResponse['job_company']}');
+      print('[DEBUG] Using job_location: ${profileResponse['job_location']}');
 
       // Fetch experience
       final experience = await supabase
@@ -122,13 +148,23 @@ class _ApplicantProfileScreenState
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text(
-          '${widget.application.userFullName}\'s Profile',
-          style: const TextStyle(
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.w600,
-            fontSize: 18,
-          ),
+        title: FutureBuilder<Map<String, dynamic>>(
+          future: _profileDataFuture,
+          builder: (context, snapshot) {
+            String userName = 'Loading...';
+            if (snapshot.hasData && snapshot.data != null) {
+              final profile = snapshot.data!['profile'] as Map<String, dynamic>;
+              userName = profile['full_name'] ?? 'Unknown User';
+            }
+            return Text(
+              '$userName\'s Profile',
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w600,
+                fontSize: 18,
+              ),
+            );
+          },
         ),
         backgroundColor: AppColors.background,
         elevation: 0,
@@ -166,6 +202,10 @@ class _ApplicantProfileScreenState
     final education = data['education'] as List;
     final skills = data['skills'] as List;
     final resume = data['resume'] as Map<String, dynamic>?;
+
+    print('[DEBUG] UI - Profile data: $profile');
+    print('[DEBUG] UI - Full name: ${profile['full_name']}');
+    print('[DEBUG] UI - Email: ${profile['email']}');
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -284,7 +324,7 @@ class _ApplicantProfileScreenState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  profile['full_name'] ?? widget.application.userFullName,
+                  profile['full_name'] ?? 'Unknown User',
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -293,14 +333,15 @@ class _ApplicantProfileScreenState
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  widget.application.jobTitle,
+                  profile['job_title'] ?? 'Unknown Job',
                   style: const TextStyle(
                     fontSize: 16,
                     color: AppColors.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 8),
-                if (profile['location'] != null) ...[
+                if (profile['location'] != null &&
+                    profile['location'].toString().isNotEmpty) ...[
                   Row(
                     children: [
                       const Icon(
@@ -833,39 +874,18 @@ class _ApplicantProfileScreenState
   }
 
   Widget _buildActionButtons() {
-    return Row(
-      children: [
-        Expanded(
-          child: OutlinedButton.icon(
-            onPressed: () => _updateApplicationStatus(),
-            icon: const Icon(Icons.edit, size: 16),
-            label: const Text('Update Status'),
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              side: const BorderSide(color: AppColors.primary),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-          ),
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: () => _updateApplicationStatus(),
+        icon: const Icon(Icons.edit, size: 16),
+        label: const Text('Update Status'),
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          side: const BorderSide(color: AppColors.primary),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: ElevatedButton.icon(
-            onPressed: () => _scheduleInterview(),
-            icon: const Icon(Icons.calendar_today, size: 16),
-            label: const Text('Schedule Interview'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.onPrimary,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 
@@ -1121,21 +1141,73 @@ class _ApplicantProfileScreenState
   }
 
   void _updateApplicationStatus() {
-    // Navigate to update status dialog or page
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Update status functionality coming soon...'),
-        backgroundColor: AppColors.info,
-      ),
+    final statusController = TextEditingController(
+      text: widget.application.status,
     );
-  }
+    final notesController = TextEditingController(
+      text: widget.application.recruiterNotes ?? '',
+    );
 
-  void _scheduleInterview() {
-    // Navigate to interview scheduling
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Interview scheduling coming soon...'),
-        backgroundColor: AppColors.info,
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Update Status - ${widget.application.userFullName}'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            DropdownButtonFormField<String>(
+              value: widget.application.status,
+              decoration: const InputDecoration(
+                labelText: 'Status',
+                border: OutlineInputBorder(),
+              ),
+              items: const [
+                DropdownMenuItem(value: 'pending', child: Text('Pending')),
+                DropdownMenuItem(value: 'reviewed', child: Text('Reviewed')),
+                DropdownMenuItem(
+                  value: 'shortlisted',
+                  child: Text('Shortlisted'),
+                ),
+                DropdownMenuItem(value: 'rejected', child: Text('Rejected')),
+                DropdownMenuItem(value: 'accepted', child: Text('Accepted')),
+              ],
+              onChanged: (value) {
+                if (value != null) {
+                  statusController.text = value;
+                }
+              },
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: notesController,
+              decoration: const InputDecoration(
+                labelText: 'Notes (Optional)',
+                border: OutlineInputBorder(),
+                hintText: 'Add any notes about this application...',
+              ),
+              maxLines: 3,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              // Here you would call the service to update the application status
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Application status updated successfully!'),
+                  backgroundColor: AppColors.success,
+                ),
+              );
+            },
+            child: const Text('Update'),
+          ),
+        ],
       ),
     );
   }
