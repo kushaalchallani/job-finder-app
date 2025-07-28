@@ -8,10 +8,12 @@ import 'package:go_router/go_router.dart';
 import 'package:job_finder_app/core/theme/app_theme.dart';
 import 'package:job_finder_app/core/widgets/text_field.dart';
 import 'package:job_finder_app/core/widgets/button.dart';
+import 'package:job_finder_app/models/job_opening.dart';
 
 class CreateJobScreen extends ConsumerStatefulWidget {
+  final JobOpening? job;
   // ignore: use_super_parameters
-  const CreateJobScreen({Key? key}) : super(key: key);
+  const CreateJobScreen({Key? key, this.job}) : super(key: key);
 
   @override
   ConsumerState<CreateJobScreen> createState() => _CreateJobScreenState();
@@ -33,6 +35,23 @@ class _CreateJobScreenState extends ConsumerState<CreateJobScreen> {
   List<String> _requirements = [];
   List<String> _benefits = [];
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.job != null) {
+      _titleController.text = widget.job!.title;
+      _companyController.text = widget.job!.companyName;
+      _locationController.text = widget.job!.location;
+      _descriptionController.text = widget.job!.description;
+      _salaryRangeController.text = widget.job!.salaryRange ?? '';
+      _requirements = List<String>.from(widget.job!.requirements);
+      _benefits = List<String>.from(widget.job!.benefits);
+      _selectedJobType = widget.job!.jobType;
+      _selectedExperienceLevel = widget.job!.experienceLevel;
+      _selectedStatus = widget.job!.status;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -409,10 +428,22 @@ class _CreateJobScreenState extends ConsumerState<CreateJobScreen> {
   }
 
   Widget _buildSubmitButton() {
-    return PrimaryButton(
-      text: 'Create Job Opening',
-      onPressed: _submitJob,
-      isLoading: _isLoading,
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: _isLoading
+            ? null
+            : () {
+                if (_formKey.currentState!.validate()) {
+                  if (widget.job != null) {
+                    _updateJob(status: _selectedStatus);
+                  } else {
+                    _createJob(status: _selectedStatus);
+                  }
+                }
+              },
+        child: Text(widget.job != null ? 'Update Job' : 'Create Job'),
+      ),
     );
   }
 
@@ -449,12 +480,6 @@ class _CreateJobScreenState extends ConsumerState<CreateJobScreen> {
   // Added Save Draft functionality
   void _saveDraft() async {
     await _createJob(status: 'paused');
-  }
-
-  void _submitJob() async {
-    if (_formKey.currentState!.validate()) {
-      await _createJob(status: _selectedStatus);
-    }
   }
 
   // Refactored job creation logic
@@ -511,6 +536,64 @@ class _CreateJobScreenState extends ConsumerState<CreateJobScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error creating job: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _updateJob({required String status}) async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      final supabase = Supabase.instance.client;
+      final user = supabase.auth.currentUser;
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
+      final jobData = {
+        'title': _titleController.text.trim(),
+        'company_name': _companyController.text.trim(),
+        'location': _locationController.text.trim(),
+        'job_type': _selectedJobType,
+        'experience_level': _selectedExperienceLevel,
+        'description': _descriptionController.text.trim(),
+        'salary_range': _salaryRangeController.text.trim().isEmpty
+            ? null
+            : _salaryRangeController.text.trim(),
+        'requirements': _requirements,
+        'benefits': _benefits,
+        'status': status,
+        'updated_at': DateTime.now().toIso8601String(),
+      };
+      await supabase
+          .from('job_openings')
+          .update(jobData)
+          .eq('id', widget.job!.id);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Job updated successfully!'),
+            backgroundColor: Color(0xFF50C878),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        context.pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error updating job:  [31m${e.toString()} [0m'),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
           ),

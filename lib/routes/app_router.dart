@@ -118,6 +118,14 @@ class AppRouter {
         builder: (context, state) => const CreateJobScreen(),
       ),
       GoRoute(
+        path: '/edit-job/:jobId',
+        name: 'edit-job',
+        builder: (context, state) {
+          final job = state.extra as JobOpening;
+          return CreateJobScreen(job: job);
+        },
+      ),
+      GoRoute(
         path: '/job-details/:jobId',
         builder: (context, state) {
           final jobId = state.pathParameters['jobId']!;
