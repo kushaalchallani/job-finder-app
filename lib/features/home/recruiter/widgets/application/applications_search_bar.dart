@@ -5,12 +5,14 @@ class ApplicationsSearchBar extends StatefulWidget {
   final String searchQuery;
   final Function(String) onSearchChanged;
   final VoidCallback onClearSearch;
+  final Function(bool)? onSearchStateChanged;
 
   const ApplicationsSearchBar({
     Key? key,
     required this.searchQuery,
     required this.onSearchChanged,
     required this.onClearSearch,
+    this.onSearchStateChanged,
   }) : super(key: key);
 
   @override
@@ -131,6 +133,7 @@ class _ApplicationsSearchBarState extends State<ApplicationsSearchBar> {
                             _searchController.clear();
                           });
                           widget.onClearSearch();
+                          widget.onSearchStateChanged?.call(false);
                         },
                       ),
                     ],
@@ -145,7 +148,7 @@ class _ApplicationsSearchBarState extends State<ApplicationsSearchBar> {
                   style: TextStyle(
                     color: AppColors.textPrimary,
                     fontWeight: FontWeight.bold,
-                    fontSize: 24,
+                    fontSize: 20,
                   ),
                 ),
                 const Spacer(),
@@ -153,12 +156,13 @@ class _ApplicationsSearchBarState extends State<ApplicationsSearchBar> {
                   icon: const Icon(
                     Icons.search,
                     color: AppColors.primary,
-                    size: 24,
+                    size: 22,
                   ),
                   onPressed: () {
                     setState(() {
                       _isSearching = true;
                     });
+                    widget.onSearchStateChanged?.call(true);
                   },
                 ),
               ],

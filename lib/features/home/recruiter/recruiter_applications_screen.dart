@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:job_finder_app/core/theme/app_theme.dart';
 import 'package:job_finder_app/features/home/recruiter/widgets/application/applications_error_state.dart';
 import 'package:job_finder_app/features/home/recruiter/widgets/application/recruiter_applications_helpers.dart';
@@ -20,6 +21,7 @@ class _RecruiterApplicationsScreenState
   String _selectedStatus = 'All';
   String? _selectedJobId;
   String _searchQuery = '';
+  bool _isSearching = false;
   final List<String> _statusFilters = [
     'All',
     'pending',
@@ -38,21 +40,44 @@ class _RecruiterApplicationsScreenState
       body: SafeArea(
         child: Column(
           children: [
-            // Header with Applications text and search
+            // Header with back button, Applications text and search
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: ApplicationsSearchBar(
-                searchQuery: _searchQuery,
-                onSearchChanged: (value) {
-                  setState(() {
-                    _searchQuery = value;
-                  });
-                },
-                onClearSearch: () {
-                  setState(() {
-                    _searchQuery = '';
-                  });
-                },
+              child: Row(
+                children: [
+                  // Only show back button when search is not expanded AND there's navigation history
+                  if (!_isSearching && context.canPop())
+                    IconButton(
+                      icon: const Icon(
+                        Icons.arrow_back,
+                        color: AppColors.textPrimary,
+                        size: 24,
+                      ),
+                      onPressed: () {
+                        context.pop();
+                      },
+                    ),
+                  Expanded(
+                    child: ApplicationsSearchBar(
+                      searchQuery: _searchQuery,
+                      onSearchChanged: (value) {
+                        setState(() {
+                          _searchQuery = value;
+                        });
+                      },
+                      onClearSearch: () {
+                        setState(() {
+                          _searchQuery = '';
+                        });
+                      },
+                      onSearchStateChanged: (isSearching) {
+                        setState(() {
+                          _isSearching = isSearching;
+                        });
+                      },
+                    ),
+                  ),
+                ],
               ),
             ),
             // Status Filter Bar
