@@ -113,6 +113,11 @@ FlashMessage? _resolveFlashMessage(String key) {
             'This account was created using a different provider. Please use the correct login method.',
         color: AppColors.error,
       );
+    case 'social_login_account_not_found':
+      return FlashMessage(
+        text: 'Account not found. Please sign up before logging in.',
+        color: AppColors.error,
+      );
     default:
       return null;
   }

@@ -2,10 +2,7 @@
 
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:job_finder_app/core/utils/error_handler.dart';
-import 'package:job_finder_app/core/utils/shared_prefs.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthSocialService {
@@ -31,7 +28,8 @@ class AuthSocialService {
 
       await _client.auth.signInWithOAuth(
         provider,
-        redirectTo: 'jobfinder://login-callback',
+        redirectTo:
+            'jobfinder://signup-callback', // �� CHANGED: Different URL for signup
       );
 
       final data = await completer.future.timeout(
@@ -45,48 +43,8 @@ class AuthSocialService {
       final email = user.email;
       if (email == null) return 'Email not found from provider.';
 
-      final existingUserWithEmail = await _client
-          .from('profiles')
-          .select('id')
-          .eq('email', email)
-          .maybeSingle();
-
-      if (existingUserWithEmail != null) {
-        await _client.auth.signOut();
-
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('flashMessage', 'social_signup_email_exists');
-
-        if (context != null && context.mounted) {
-          context.go(
-            '/login',
-          ); // 🔁 Redirect to login page where flash message will be read
-        }
-
-        return 'An account with this email already exists. Please log in instead.';
-      }
-
-      final profile = await _client
-          .from('profiles')
-          .select()
-          .eq('id', user.id)
-          .maybeSingle();
-
-      if (profile == null) {
-        await _client.from('profiles').insert({
-          'id': user.id,
-          'email': email,
-          'full_name':
-              user.userMetadata?['full_name'] ??
-              user.userMetadata?['name'] ??
-              'User',
-          'sign_up_method': provider.name,
-          'role': 'job_seeker',
-        });
-      }
-
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('flashMessage', 'signup_success');
+      // 🔧 REMOVED: All validation logic moved to DeepLinkHandler
+      // The deep link handler will handle the OAuth callback and show appropriate messages
 
       await _client.auth.signOut();
       onSuccess();
@@ -126,7 +84,7 @@ class AuthSocialService {
     try {
       await _client.auth.signInWithOAuth(
         provider,
-        redirectTo: 'jobfinder://login-callback',
+        redirectTo: 'jobfinder://login-callback', // �� KEPT: Same URL for login
       );
 
       final data = await completer.future.timeout(
@@ -142,70 +100,8 @@ class AuthSocialService {
         throw Exception("OAuth provider did not return an email");
       }
 
-      // 🔒 Check if the email exists in profiles
-      final existing = await _client
-          .from('profiles')
-          .select('sign_up_method')
-          .eq('email', email)
-          .maybeSingle();
-
-      if (existing != null) {
-        final existingMethod = (existing['sign_up_method'] as String?)
-            ?.toLowerCase();
-        final currentMethod = provider.name.toLowerCase();
-
-        if (existingMethod == 'email' && currentMethod != 'email') {
-          await _client.auth.signOut();
-
-          if (context.mounted) {
-            await SharedPrefs.setString(
-              'loginError',
-              'This email is registered with email/password. Please log in using those credentials.',
-            );
-            context.go('/login');
-          }
-
-          return 'This email is registered with email/password. Please log in using those credentials.';
-        }
-
-        if (existingMethod != currentMethod) {
-          await _client.auth.signOut();
-
-          if (context.mounted) {
-            await SharedPrefs.setString(
-              'loginError',
-              'This account was registered using a different provider ($existingMethod). Please log in accordingly.',
-            );
-            context.go('/login');
-          }
-
-          return 'This account was registered using a different provider ($existingMethod). Please log in accordingly.';
-        }
-      }
-
-      final profile = await _client
-          .from('profiles')
-          .select()
-          .eq('id', user.id)
-          .maybeSingle();
-
-      if (profile == null) {
-        await _client.auth.signOut();
-
-        if (context.mounted) {
-          await SharedPrefs.setString(
-            'loginError',
-            'Please sign up before logging in.',
-          );
-          context.go('/login');
-        }
-
-        return 'Please sign up before logging in.';
-      }
-
-      if (context.mounted) {
-        context.go('/home');
-      }
+      // 🔧 REMOVED: All the validation logic is now handled in DeepLinkHandler
+      // The deep link handler will process the OAuth callback and handle all error cases
 
       return null;
     } on TimeoutException {

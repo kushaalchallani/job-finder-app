@@ -93,6 +93,9 @@ class DeepLinkHandler {
     if (isOAuth) {
       try {
         await Supabase.instance.client.auth.getSessionFromUrl(uri);
+
+        // 🔧 ADDED: Check for social login/signup specific errors after OAuth completion
+        await _handleSocialAuthValidation();
       } on AuthException catch (e) {
         debugPrint('⚠️ OAuth error: ${e.message}');
         _showError(_getAuthErrorMessage(e.message));
@@ -107,6 +110,120 @@ class DeepLinkHandler {
         });
       }
       return;
+    }
+  }
+
+  // 🔧 UPDATED: Handle both social login and signup validation
+  Future<void> _handleSocialAuthValidation() async {
+    try {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user == null) {
+        throw Exception('No user returned from OAuth');
+      }
+
+      final email = user.email;
+      if (email == null) {
+        throw Exception('OAuth provider did not return an email');
+      }
+
+      // Check if the email exists in profiles
+      final existing = await Supabase.instance.client
+          .from('profiles')
+          .select('sign_up_method')
+          .eq('email', email)
+          .maybeSingle();
+
+      if (existing != null) {
+        final existingMethod = (existing['sign_up_method'] as String?)
+            ?.toLowerCase();
+
+        //  ADDED: Handle signup attempt with existing email
+        // Check if user tried to signup with email that already exists
+        if (existingMethod == 'email') {
+          await Supabase.instance.client.auth.signOut();
+          _showError(
+            'This email is already registered with email/password. Please log in instead.',
+          );
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            AppRouter.router.go('/login');
+          });
+          return;
+        }
+
+        // Check if user tried to login with different provider
+        if (existingMethod == 'email') {
+          await Supabase.instance.client.auth.signOut();
+          _showError(
+            'This email is registered with email/password. Please log in using those credentials.',
+          );
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            AppRouter.router.go('/login');
+          });
+          return;
+        }
+
+        // Check if user tried to login with wrong social provider
+        if (existingMethod != null &&
+            existingMethod != 'google' &&
+            existingMethod != 'facebook') {
+          await Supabase.instance.client.auth.signOut();
+          _showError(
+            'This account was created using a different provider. Please use the correct login method.',
+          );
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            AppRouter.router.go('/login');
+          });
+          return;
+        }
+
+        //  ADDED: Handle signup attempt with existing social account
+        if (existingMethod != null &&
+            (existingMethod == 'google' || existingMethod == 'facebook')) {
+          await Supabase.instance.client.auth.signOut();
+          _showError(
+            'This email is already registered. Please log in instead.',
+          );
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            AppRouter.router.go('/login');
+          });
+          return;
+        }
+      }
+
+      // 🔧 ADDED: Check if profile exists for the user (for login attempts)
+      final profile = await Supabase.instance.client
+          .from('profiles')
+          .select()
+          .eq('id', user.id)
+          .maybeSingle();
+
+      if (profile == null) {
+        await Supabase.instance.client.auth.signOut();
+        _showError('Account not found. Please sign up before logging in.');
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          AppRouter.router.go('/login');
+        });
+        return;
+      }
+
+      // Success - navigate to appropriate home page
+      final role = profile['role'] as String?;
+      if (role == 'recruiter') {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          AppRouter.router.go('/recruiter/home');
+        });
+      } else {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          AppRouter.router.go('/seeker/home');
+        });
+      }
+    } catch (e) {
+      debugPrint('⚠️ Social auth validation error: $e');
+      await Supabase.instance.client.auth.signOut();
+      _showError('Social authentication failed. Please try again.');
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        AppRouter.router.go('/login');
+      });
     }
   }
 

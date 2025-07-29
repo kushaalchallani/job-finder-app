@@ -22,7 +22,7 @@ class LoginState {
   LoginState copyWith({bool? isLoading, bool? isSocialLoading, String? error}) {
     return LoginState(
       isLoading: isLoading ?? this.isLoading,
-      isSocialLoading: isSocialLoading ?? this.isSocialLoading,
+      isSocialLoading: isLoading ?? this.isSocialLoading,
       error: error,
     );
   }
@@ -85,30 +85,28 @@ class LoginController extends StateNotifier<LoginState> {
     return true;
   }
 
+  //  SIMPLIFIED: Social login now just initiates OAuth, validation handled by DeepLinkHandler
   Future<bool> signInWithSocial({
     required OAuthProvider provider,
     required BuildContext context,
   }) async {
     state = state.copyWith(isSocialLoading: true, error: null);
-    final error = await AuthService.signInWithSocial(
-      provider: provider,
-      context: context,
-    );
-    state = state.copyWith(isSocialLoading: false, error: error);
-
-    if (error != null) return false;
-
-    // 🟢 FLASH WORKS because this happens after widget is ready
-    final session = Supabase.instance.client.auth.currentSession;
-    final role = session?.user.userMetadata?['role'];
-
-    if (role == 'recruiter') {
-      context.go('/recruiter-home');
-    } else {
-      context.go('/home');
+    
+    try {
+      await AuthService.signInWithSocial(
+        provider: provider,
+        context: context,
+      );
+      
+      // 🔧 REMOVED: All validation logic moved to DeepLinkHandler
+      // The deep link handler will handle the OAuth callback and show appropriate messages
+      
+      state = state.copyWith(isSocialLoading: false);
+      return true;
+    } catch (e) {
+      state = state.copyWith(isSocialLoading: false, error: e.toString());
+      return false;
     }
-
-    return true;
   }
 
   void clearError() {
