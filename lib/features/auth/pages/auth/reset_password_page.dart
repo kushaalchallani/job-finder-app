@@ -8,6 +8,7 @@ import 'package:job_finder_app/core/widgets/text_field.dart';
 import '../../controllers/reset_password_controller.dart';
 import 'package:job_finder_app/core/theme/app_theme.dart';
 import 'package:job_finder_app/core/utils/flash_message_queue.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ResetPasswordPage extends ConsumerStatefulWidget {
   const ResetPasswordPage({super.key});
@@ -25,7 +26,26 @@ class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage> {
     super.initState();
     Future.microtask(() {
       ref.read(resetPasswordControllerProvider.notifier).clearError();
+      _checkSession();
     });
+  }
+
+  void _checkSession() {
+    final session = Supabase.instance.client.auth.currentSession;
+    if (session == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref
+            .read(flashMessageQueueProvider)
+            .enqueue(
+              FlashMessage(
+                text:
+                    'Invalid or expired reset link. Please request a new one.',
+                color: AppColors.error,
+              ),
+            );
+        context.go('/login');
+      });
+    }
   }
 
   @override
@@ -45,15 +65,22 @@ class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage> {
 
     final state = ref.read(resetPasswordControllerProvider);
 
-    // Display only error globally
     if (state.error != null) {
       ref
           .read(flashMessageQueueProvider)
           .enqueue(FlashMessage(text: state.error!, color: AppColors.error));
     }
 
-    // ✅ Navigate away silently on success
     if (state.successMessage != null && mounted) {
+      ref
+          .read(flashMessageQueueProvider)
+          .enqueue(
+            FlashMessage(
+              text:
+                  'Password updated successfully! Please sign in with your new password.',
+              color: AppColors.success,
+            ),
+          );
       context.go('/login');
     }
   }

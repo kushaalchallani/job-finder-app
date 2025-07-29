@@ -28,8 +28,14 @@ class RouterUtils {
       '/signup',
       '/recruiter-signup',
       '/forgot-password',
-      '/reset-password',
     ];
+
+    if (location == '/reset-password') {
+      if (!isLoggedIn) {
+        return '/login';
+      }
+      return null;
+    }
 
     if (!isLoggedIn) {
       return publicRoutes.contains(location) ? null : '/login';

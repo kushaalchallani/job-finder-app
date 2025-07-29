@@ -50,7 +50,7 @@ class _MyAppState extends ConsumerState<MyApp> {
   @override
   void initState() {
     super.initState();
-    _deepLinkHandler = DeepLinkHandler(context);
+    _deepLinkHandler = DeepLinkHandler(context, ref);
     _deepLinkHandler!.init();
   }
 

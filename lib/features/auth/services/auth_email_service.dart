@@ -145,17 +145,33 @@ class AuthEmailService {
     try {
       final session = _client.auth.currentSession;
       if (session == null) {
-        throw Exception('No active session. Try using the link again.');
+        throw Exception('No active session. Please use the reset link again.');
+      }
+
+      final user = session.user;
+      if (user.appMetadata['provider'] != 'email') {
+        throw Exception('Invalid session type for password reset.');
       }
 
       await _client.auth.updateUser(UserAttributes(password: newPassword));
+
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('flashMessage', 'password_reset_success::/login');
+
       await _client.auth.signOut();
     } on AuthException catch (e) {
-      throw Exception(ErrorHandler.getAuthError(e.message));
+      if (e.message.contains('Password should be at least')) {
+        throw Exception('Password must be at least 6 characters long.');
+      } else if (e.message.contains('Invalid login credentials')) {
+        throw Exception('Invalid session. Please use the reset link again.');
+      } else {
+        throw Exception(ErrorHandler.getAuthError(e.message));
+      }
     } catch (e) {
-      throw Exception(ErrorHandler.getUserFriendlyError(e.toString()));
+      if (e.toString().contains('Exception:')) {
+        rethrow; // Re-throw our custom exceptions
+      }
+      throw Exception('Failed to update password. Please try again.');
     }
   }
 }
