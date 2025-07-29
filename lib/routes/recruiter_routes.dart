@@ -3,6 +3,7 @@ import 'package:job_finder_app/features/home/recruiter/pages/application/applica
 import 'package:job_finder_app/features/home/recruiter/pages/application/manage_applications.dart';
 import 'package:job_finder_app/features/home/recruiter/pages/jobs/create_job.dart';
 import 'package:job_finder_app/features/home/recruiter/pages/jobs/edit_job.dart';
+import 'package:job_finder_app/features/home/recruiter/recruiter_profile_screen.dart';
 import 'package:job_finder_app/features/home/recruiter/pages/settings_page.dart';
 import 'package:job_finder_app/features/home/recruiter/recruiter_applications_screen.dart';
 import 'package:job_finder_app/features/home/recruiter/recruiter_dashboard.dart';
@@ -52,6 +53,11 @@ class RecruiterRoutes {
       path: '/settings',
       name: 'settings',
       builder: (context, state) => const SettingsPage(),
+    ),
+    GoRoute(
+      path: '/recruiter-profile',
+      name: 'recruiter-profile',
+      builder: (context, state) => const RecruiterProfileScreen(),
     ),
     GoRoute(
       path: '/manage-applications/:jobId',

@@ -13,6 +13,7 @@ class UserProfile {
   final String? github;
   final String? profileImageUrl;
   final String signUpMethod;
+  final String? position;
 
   UserProfile({
     required this.id,
@@ -28,6 +29,7 @@ class UserProfile {
     this.github,
     this.profileImageUrl,
     required this.signUpMethod,
+    this.position,
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
@@ -45,6 +47,7 @@ class UserProfile {
       github: json['github'],
       profileImageUrl: json['profile_image_url'],
       signUpMethod: json['sign_up_method'],
+      position: json['position'],
     );
   }
 
@@ -58,6 +61,7 @@ class UserProfile {
       'linkedin': linkedin,
       'github': github,
       'profile_image_url': profileImageUrl,
+      'position': position,
     };
   }
 }

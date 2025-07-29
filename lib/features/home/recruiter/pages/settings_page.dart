@@ -27,7 +27,10 @@ class SettingsPage extends ConsumerWidget {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            FocusScope.of(context).unfocus();
+            context.pop();
+          },
         ),
       ),
       body: SafeArea(

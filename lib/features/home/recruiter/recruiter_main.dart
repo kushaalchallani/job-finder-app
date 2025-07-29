@@ -5,6 +5,7 @@ import 'package:job_finder_app/core/theme/app_theme.dart';
 import 'package:job_finder_app/features/home/recruiter/recruiter_dashboard.dart';
 import 'package:job_finder_app/features/home/recruiter/recruiter_applications_screen.dart';
 import 'package:job_finder_app/features/home/recruiter/recruiter_jobs_screen.dart';
+import 'package:job_finder_app/features/home/recruiter/recruiter_profile_screen.dart';
 
 class RecruiterMainScreen extends ConsumerStatefulWidget {
   // ignore: use_super_parameters
@@ -20,9 +21,9 @@ class _RecruiterMainScreenState extends ConsumerState<RecruiterMainScreen> {
 
   final List<Widget> _tabs = [
     const RecruiterDashboard(),
-    const RecruiterJobsScreen(), // <-- Now imported from widgets/
+    const RecruiterJobsScreen(),
     const RecruiterApplicationsScreen(),
-    // const ProfileTab(),      // You'll create this later
+    const RecruiterProfileScreen(),
   ];
 
   @override
