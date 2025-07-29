@@ -26,6 +26,7 @@ class RouterUtils {
     final publicRoutes = [
       '/login',
       '/signup',
+      '/recruiter-signup',
       '/forgot-password',
       '/reset-password',
     ];
