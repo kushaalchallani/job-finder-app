@@ -12,12 +12,22 @@ final userProfileProvider = FutureProvider<UserProfile?>((ref) async {
     return null;
   }
 
-  final response = await supabase
-      .from('profiles')
-      .select()
-      .eq('id', user.id)
-      .single();
-  return UserProfile.fromJson(response);
+  try {
+    final response = await supabase
+        .from('profiles')
+        .select()
+        .eq('id', user.id)
+        .maybeSingle(); // 🔧 FIXED: Changed from .single() to .maybeSingle()
+
+    if (response == null) {
+      return null;
+    }
+
+    return UserProfile.fromJson(response);
+  } catch (e) {
+    // Handle any other errors gracefully
+    return null;
+  }
 });
 
 // User Experiences Provider
@@ -31,12 +41,16 @@ final userExperiencesProvider = FutureProvider<List<UserExperience>>((
     return [];
   }
 
-  final response = await supabase
-      .from('user_experiences')
-      .select()
-      .eq('user_id', user.id)
-      .order('start_date', ascending: false);
-  return response.map((exp) => UserExperience.fromJson(exp)).toList();
+  try {
+    final response = await supabase
+        .from('user_experiences')
+        .select()
+        .eq('user_id', user.id)
+        .order('start_date', ascending: false);
+    return response.map((exp) => UserExperience.fromJson(exp)).toList();
+  } catch (e) {
+    return [];
+  }
 });
 
 // User Skills Provider
@@ -48,12 +62,16 @@ final userSkillsProvider = FutureProvider<List<UserSkill>>((ref) async {
     return [];
   }
 
-  final response = await supabase
-      .from('user_skills')
-      .select()
-      .eq('user_id', user.id)
-      .order('created_at', ascending: false);
-  return response.map((skill) => UserSkill.fromJson(skill)).toList();
+  try {
+    final response = await supabase
+        .from('user_skills')
+        .select()
+        .eq('user_id', user.id)
+        .order('created_at', ascending: false);
+    return response.map((skill) => UserSkill.fromJson(skill)).toList();
+  } catch (e) {
+    return [];
+  }
 });
 
 // User Resumes Provider
@@ -65,12 +83,16 @@ final userResumesProvider = FutureProvider<List<UserResume>>((ref) async {
     return [];
   }
 
-  final response = await supabase
-      .from('user_resumes')
-      .select()
-      .eq('user_id', user.id)
-      .order('uploaded_at', ascending: false);
-  return response.map((resume) => UserResume.fromJson(resume)).toList();
+  try {
+    final response = await supabase
+        .from('user_resumes')
+        .select()
+        .eq('user_id', user.id)
+        .order('uploaded_at', ascending: false);
+    return response.map((resume) => UserResume.fromJson(resume)).toList();
+  } catch (e) {
+    return [];
+  }
 });
 
 // Profile Completion Provider
