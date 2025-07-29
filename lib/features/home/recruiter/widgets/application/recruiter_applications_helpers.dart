@@ -96,6 +96,7 @@ Widget buildDetailRow(String label, String value) {
 Future<void> updateApplicationStatus(
   BuildContext context,
   JobApplication application,
+  WidgetRef ref,
 ) async {
   final statusController = TextEditingController(text: application.status);
   final notesController = TextEditingController(
@@ -143,14 +144,39 @@ Future<void> updateApplicationStatus(
         PrimaryButton(
           text: 'Update',
           onPressed: () async {
-            // Here you would call the service to update the application status
-            Navigator.pop(context);
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Application status updated successfully!'),
-                backgroundColor: AppColors.success,
-              ),
-            );
+            try {
+              final supabase = Supabase.instance.client;
+              await supabase
+                  .from('job_applications')
+                  .update({
+                    'status': statusController.text,
+                    'recruiter_notes': notesController.text,
+                    'updated_at': DateTime.now().toIso8601String(),
+                  })
+                  .eq('id', application.id);
+
+              if (context.mounted) {
+                Navigator.pop(context);
+                // Refresh the provider to update the UI
+                ref.refresh(allRecruiterApplicationsProvider);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Application status updated successfully!'),
+                    backgroundColor: AppColors.success,
+                  ),
+                );
+              }
+            } catch (e) {
+              if (context.mounted) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Error updating status: ${e.toString()}'),
+                    backgroundColor: AppColors.error,
+                  ),
+                );
+              }
+            }
           },
         ),
       ],

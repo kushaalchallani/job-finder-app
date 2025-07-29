@@ -87,6 +87,6 @@ class _ApplicantProfileScreenState
   }
 
   void _updateApplicationStatus() {
-    showUpdateApplicationStatusDialog(context, widget.application);
+    showUpdateApplicationStatusDialog(context, widget.application, ref);
   }
 }

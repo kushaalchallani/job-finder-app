@@ -1,11 +1,13 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:job_finder_app/core/theme/app_theme.dart';
 import 'package:job_finder_app/core/widgets/button.dart';
 import 'package:job_finder_app/core/widgets/text_field.dart';
 import 'package:job_finder_app/models/job_application.dart';
+import 'package:job_finder_app/core/providers/application_provider.dart';
 
 Future<Map<String, dynamic>> loadApplicantProfile(
   JobApplication application,
@@ -123,6 +125,7 @@ Widget buildStatusChip(String status) {
 Future<void> showUpdateApplicationStatusDialog(
   BuildContext context,
   JobApplication application,
+  WidgetRef ref,
 ) async {
   final statusController = TextEditingController(text: application.status);
   final notesController = TextEditingController(
@@ -176,15 +179,15 @@ Future<void> showUpdateApplicationStatusDialog(
                   .from('job_applications')
                   .update({
                     'status': statusController.text,
-                    'recruiter_notes': notesController.text.isEmpty
-                        ? null
-                        : notesController.text,
+                    'recruiter_notes': notesController.text,
                     'updated_at': DateTime.now().toIso8601String(),
                   })
                   .eq('id', application.id);
 
               if (context.mounted) {
                 Navigator.pop(context);
+                // Refresh the provider to update the UI
+                ref.refresh(jobApplicationsProvider(application.jobId));
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('Application status updated successfully!'),

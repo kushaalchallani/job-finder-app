@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:job_finder_app/features/home/recruiter/widgets/application/applications_empty_state.dart';
 import 'package:job_finder_app/features/home/recruiter/widgets/application/recruiter_application_card.dart';
 import 'package:job_finder_app/features/home/recruiter/widgets/application/recruiter_applications_helpers.dart';
@@ -8,6 +9,7 @@ class RecruiterApplicationsList extends StatelessWidget {
   final String selectedStatus;
   final String? selectedJobId;
   final Future<void> Function() onRefresh;
+  final WidgetRef ref;
 
   const RecruiterApplicationsList({
     Key? key,
@@ -15,6 +17,7 @@ class RecruiterApplicationsList extends StatelessWidget {
     required this.selectedStatus,
     required this.selectedJobId,
     required this.onRefresh,
+    required this.ref,
   }) : super(key: key);
 
   @override
@@ -44,7 +47,8 @@ class RecruiterApplicationsList extends StatelessWidget {
           return RecruiterApplicationCard(
             application: application,
             onViewProfile: () => viewApplicantProfile(context, application),
-            onUpdateStatus: () => updateApplicationStatus(context, application),
+            onUpdateStatus: () =>
+                updateApplicationStatus(context, application, ref),
           );
         },
       ),

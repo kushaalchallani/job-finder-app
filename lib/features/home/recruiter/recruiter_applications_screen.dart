@@ -113,6 +113,7 @@ class _RecruiterApplicationsScreenState
                     onRefresh: () async {
                       ref.invalidate(allRecruiterApplicationsProvider);
                     },
+                    ref: ref,
                   );
                 },
                 loading: () => const Center(child: CircularProgressIndicator()),
