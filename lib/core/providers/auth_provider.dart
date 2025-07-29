@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously, avoid_print
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -12,11 +10,7 @@ final authStateProvider = StreamProvider<AuthState>((ref) {
 });
 
 final authRedirectProvider = Provider<void>((ref) {
-  print('[authRedirectProvider] initialized ✅');
-
   ref.listen(authStateProvider, (previous, next) async {
-    print('[authRedirectProvider] Auth state changed');
-
     final data = next.valueOrNull;
     final session = data?.session;
 
@@ -25,7 +19,6 @@ final authRedirectProvider = Provider<void>((ref) {
       final context = navigatorKey.currentContext;
 
       if (context == null) {
-        print('[authRedirectProvider] context is still null ❌');
         return;
       }
 
@@ -34,13 +27,11 @@ final authRedirectProvider = Provider<void>((ref) {
         final metadata = user.userMetadata;
 
         if (metadata == null) {
-          print('[authRedirectProvider] No metadata found ❌');
           context.go('/home'); // fallback
           return;
         }
 
         final role = metadata['role'] as String?;
-        print('[authRedirectProvider] role: $role');
 
         if (role == 'seeker') {
           context.go('/seeker/home');
@@ -50,7 +41,6 @@ final authRedirectProvider = Provider<void>((ref) {
           context.go('/home');
         }
       } else {
-        print('[authRedirectProvider] no session, going to login');
         context.go('/login');
       }
     });

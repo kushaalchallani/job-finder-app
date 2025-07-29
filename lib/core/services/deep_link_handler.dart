@@ -21,6 +21,11 @@ class DeepLinkHandler {
     _handleIncomingLinks();
   }
 
+  void dispose() {
+    _linkSubscription?.cancel();
+  }
+
+  // MARK: - Initial Link Handling
   Future<void> _handleInitialLink() async {
     try {
       final initialUri = await _appLinks.getInitialAppLink();
@@ -28,7 +33,6 @@ class DeepLinkHandler {
         await _processDeepLink(initialUri);
       }
     } catch (e) {
-      debugPrint('⚠️ Error handling initial link: $e');
       _showError('Failed to process the link. Please try again.');
     }
   }
@@ -41,197 +45,248 @@ class DeepLinkHandler {
         }
       },
       onError: (err) {
-        debugPrint('⚠️ Error handling incoming links: $err');
         _showError('Failed to process the link. Please try again.');
       },
     );
   }
 
+  // MARK: - Deep Link Processing
   Future<void> _processDeepLink(Uri uri) async {
-    bool isPasswordReset =
-        uri.queryParameters.containsKey('access_token') ||
+    if (_isPasswordReset(uri)) {
+      await _handlePasswordReset(uri);
+    } else if (_isOAuth(uri)) {
+      await _handleOAuth(uri);
+    }
+  }
+
+  bool _isPasswordReset(Uri uri) {
+    return uri.queryParameters.containsKey('access_token') ||
         (uri.queryParameters.containsKey('type') &&
             uri.queryParameters['type'] == 'recovery') ||
         uri.toString().contains('reset-password');
+  }
 
-    bool isOAuth =
-        (uri.queryParameters.containsKey('code') &&
+  bool _isOAuth(Uri uri) {
+    return (uri.queryParameters.containsKey('code') &&
             uri.queryParameters.containsKey('state')) ||
-        uri.toString().contains('login-callback');
+        uri.toString().contains('login-callback') ||
+        uri.toString().contains('signup-callback');
+  }
 
-    if (isPasswordReset) {
-      try {
-        await Supabase.instance.client.auth.getSessionFromUrl(uri);
+  // MARK: - Password Reset Handling
+  Future<void> _handlePasswordReset(Uri uri) async {
+    try {
+      await Supabase.instance.client.auth.getSessionFromUrl(uri);
 
-        final session = Supabase.instance.client.auth.currentSession;
-        if (session == null) {
-          throw Exception('Failed to create session from reset link');
-        }
-
-        // Navigate to reset password page
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          AppRouter.router.go('/reset-password');
-        });
-      } on AuthException catch (e) {
-        debugPrint('⚠️ Auth error in password reset: ${e.message}');
-        _showError(_getAuthErrorMessage(e.message));
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          AppRouter.router.go('/login');
-        });
-      } catch (e) {
-        debugPrint('⚠️ Error processing password reset link: $e');
-        _showError(
-          'Invalid or expired password reset link. Please request a new one.',
-        );
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          AppRouter.router.go('/login');
-        });
+      final session = Supabase.instance.client.auth.currentSession;
+      if (session == null) {
+        throw Exception('Failed to create session from reset link');
       }
-      return;
-    }
 
-    if (isOAuth) {
-      try {
-        await Supabase.instance.client.auth.getSessionFromUrl(uri);
-
-        // 🔧 ADDED: Check for social login/signup specific errors after OAuth completion
-        await _handleSocialAuthValidation();
-      } on AuthException catch (e) {
-        debugPrint('⚠️ OAuth error: ${e.message}');
-        _showError(_getAuthErrorMessage(e.message));
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          AppRouter.router.go('/login');
-        });
-      } catch (e) {
-        debugPrint('⚠️ OAuth processing error: $e');
-        _showError('Failed to complete social login. Please try again.');
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          AppRouter.router.go('/login');
-        });
-      }
-      return;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        AppRouter.router.go('/reset-password');
+      });
+    } on AuthException catch (e) {
+      _showError(_getAuthErrorMessage(e.message));
+      _navigateToLogin();
+    } catch (e) {
+      _showError(
+        'Invalid or expired password reset link. Please request a new one.',
+      );
+      _navigateToLogin();
     }
   }
 
-  // 🔧 UPDATED: Handle both social login and signup validation
-  Future<void> _handleSocialAuthValidation() async {
+  // MARK: - OAuth Handling
+  Future<void> _handleOAuth(Uri uri) async {
     try {
-      final user = Supabase.instance.client.auth.currentUser;
-      if (user == null) {
-        throw Exception('No user returned from OAuth');
+      await Supabase.instance.client.auth.getSessionFromUrl(uri);
+
+      final isSignup = uri.toString().contains('signup-callback');
+
+      if (isSignup) {
+        await _handleSocialSignupValidation();
+      } else {
+        await _handleSocialLoginValidation();
       }
+    } on AuthException catch (e) {
+      _showError(_getAuthErrorMessage(e.message));
+      _navigateToLogin();
+    } catch (e) {
+      _showError('Failed to complete social authentication. Please try again.');
+      _navigateToLogin();
+    }
+  }
 
-      final email = user.email;
-      if (email == null) {
-        throw Exception('OAuth provider did not return an email');
-      }
+  // MARK: - Social Login Validation
+  Future<void> _handleSocialLoginValidation() async {
+    try {
+      final user = _getCurrentUser();
+      final email = _getUserEmail(user);
 
-      // Check if the email exists in profiles
-      final existing = await Supabase.instance.client
-          .from('profiles')
-          .select('sign_up_method')
-          .eq('email', email)
-          .maybeSingle();
-
-      if (existing != null) {
-        final existingMethod = (existing['sign_up_method'] as String?)
-            ?.toLowerCase();
-
-        //  ADDED: Handle signup attempt with existing email
-        // Check if user tried to signup with email that already exists
-        if (existingMethod == 'email') {
-          await Supabase.instance.client.auth.signOut();
-          _showError(
-            'This email is already registered with email/password. Please log in instead.',
-          );
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            AppRouter.router.go('/login');
-          });
-          return;
-        }
-
-        // Check if user tried to login with different provider
-        if (existingMethod == 'email') {
-          await Supabase.instance.client.auth.signOut();
-          _showError(
-            'This email is registered with email/password. Please log in using those credentials.',
-          );
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            AppRouter.router.go('/login');
-          });
-          return;
-        }
-
-        // Check if user tried to login with wrong social provider
-        if (existingMethod != null &&
-            existingMethod != 'google' &&
-            existingMethod != 'facebook') {
-          await Supabase.instance.client.auth.signOut();
-          _showError(
-            'This account was created using a different provider. Please use the correct login method.',
-          );
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            AppRouter.router.go('/login');
-          });
-          return;
-        }
-
-        //  ADDED: Handle signup attempt with existing social account
-        if (existingMethod != null &&
-            (existingMethod == 'google' || existingMethod == 'facebook')) {
-          await Supabase.instance.client.auth.signOut();
-          _showError(
-            'This email is already registered. Please log in instead.',
-          );
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            AppRouter.router.go('/login');
-          });
-          return;
-        }
-      }
-
-      // 🔧 ADDED: Check if profile exists for the user (for login attempts)
-      final profile = await Supabase.instance.client
-          .from('profiles')
-          .select()
-          .eq('id', user.id)
-          .maybeSingle();
-
-      if (profile == null) {
-        await Supabase.instance.client.auth.signOut();
-        _showError('Account not found. Please sign up before logging in.');
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          AppRouter.router.go('/login');
-        });
+      final existing = await _checkExistingProfile(email);
+      if (existing == null) {
+        await _signOutAndShowError('Account not found. Please sign up first.');
         return;
       }
 
-      // Success - navigate to appropriate home page
-      final role = profile['role'] as String?;
-      if (role == 'recruiter') {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          AppRouter.router.go('/recruiter/home');
-        });
-      } else {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          AppRouter.router.go('/seeker/home');
-        });
+      final signUpMethod = existing['sign_up_method'] as String?;
+      final provider = _detectProvider(user);
+
+      // Check if user has email account and trying to login with social
+      if (signUpMethod == 'email') {
+        await _signOutAndShowError(
+          'This email is registered with email/password. Please login using your email and password.',
+        );
+        return;
       }
+
+      if (signUpMethod != null && signUpMethod != provider) {
+        await _signOutAndShowError(
+          'Account exists with $signUpMethod. Please use $signUpMethod to login.',
+        );
+        return;
+      }
+
+      _showSuccess('Login successful!');
+      _navigateToHome();
     } catch (e) {
-      debugPrint('⚠️ Social auth validation error: $e');
-      await Supabase.instance.client.auth.signOut();
-      _showError('Social authentication failed. Please try again.');
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        AppRouter.router.go('/login');
-      });
+      await _signOutAndShowError('Login failed. Please try again.');
     }
   }
 
+  // MARK: - Social Signup Validation
+  Future<void> _handleSocialSignupValidation() async {
+    try {
+      final user = _getCurrentUser();
+      final email = _getUserEmail(user);
+
+      final existing = await _checkExistingProfileForSignup(email);
+      if (existing != null) {
+        await _signOutAndShowError(
+          'Account already exists. Please login instead.',
+        );
+        return;
+      }
+
+      await _createUserProfile(user, email);
+      _showSuccess('Account created successfully! Please Login');
+      await Supabase.instance.client.auth.signOut();
+      _navigateToHome();
+    } catch (e) {
+      await _handleSignupError(e);
+    }
+  }
+
+  // MARK: - Helper Methods
+  User _getCurrentUser() {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) {
+      throw Exception('No user returned from OAuth');
+    }
+    return user;
+  }
+
+  String _getUserEmail(User user) {
+    final email = user.email;
+    if (email == null) {
+      throw Exception('OAuth provider did not return an email');
+    }
+    return email;
+  }
+
+  Future<Map<String, dynamic>?> _checkExistingProfile(String email) async {
+    return await Supabase.instance.client
+        .from('profiles')
+        .select('sign_up_method')
+        .eq('email', email)
+        .maybeSingle();
+  }
+
+  Future<Map<String, dynamic>?> _checkExistingProfileForSignup(
+    String email,
+  ) async {
+    return await Supabase.instance.client
+        .from('profiles')
+        .select('id')
+        .eq('email', email)
+        .maybeSingle();
+  }
+
+  String? _detectProvider(User user) {
+    if (user.appMetadata.containsKey('provider') == true) {
+      return user.appMetadata['provider'] as String;
+    }
+
+    if (user.userMetadata?.containsKey('provider') == true) {
+      return user.userMetadata!['provider'] as String;
+    }
+
+    final email = user.email?.toLowerCase();
+    if (email != null) {
+      if (email.contains('google')) return 'google';
+      if (email.contains('facebook')) return 'facebook';
+    }
+
+    return 'unknown';
+  }
+
+  Future<void> _createUserProfile(User user, String email) async {
+    final provider = _detectProvider(user);
+
+    final profileData = {
+      'id': user.id,
+      'email': email,
+      'full_name':
+          user.userMetadata?['full_name'] ??
+          user.userMetadata?['name'] ??
+          'Unknown',
+      'sign_up_method': provider,
+      'role': 'job_seeker',
+    };
+
+    if (Supabase.instance.client.auth.currentUser == null) {
+      throw Exception('User not authenticated during profile creation');
+    }
+
+    await Supabase.instance.client.from('profiles').insert(profileData);
+  }
+
+  Future<void> _handleSignupError(dynamic error) async {
+    final errorMessage = error.toString();
+
+    if (errorMessage.contains('row-level security policy')) {
+      _showError(
+        'Profile creation failed due to security policy. Please contact support.',
+      );
+    } else if (errorMessage.contains('duplicate key')) {
+      _showError('Account already exists. Please login instead.');
+    } else {
+      _showError('Signup failed. Please try again.');
+    }
+
+    await Supabase.instance.client.auth.signOut();
+  }
+
+  Future<void> _signOutAndShowError(String message) async {
+    await Supabase.instance.client.auth.signOut();
+    _showError(message);
+  }
+
+  // MARK: - UI Methods
   void _showError(String message) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref
           .read(flashMessageQueueProvider)
           .enqueue(FlashMessage(text: message, color: AppColors.error));
+    });
+  }
+
+  void _showSuccess(String message) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref
+          .read(flashMessageQueueProvider)
+          .enqueue(FlashMessage(text: message, color: AppColors.success));
     });
   }
 
@@ -251,7 +306,13 @@ class DeepLinkHandler {
     }
   }
 
-  void dispose() {
-    _linkSubscription?.cancel();
+  void _navigateToLogin() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      AppRouter.router.go('/login');
+    });
+  }
+
+  void _navigateToHome() {
+    // Navigation is handled by the auth state listener
   }
 }

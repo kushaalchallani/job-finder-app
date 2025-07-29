@@ -11,16 +11,10 @@ class FlashBanner extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final message = ref.watch(flashMessageQueueProvider).current;
 
-    debugPrint(
-      '🟢 [BANNER] FlashBanner build called - Message: ${message?.text ?? "null"}',
-    );
-
     if (message == null) {
-      debugPrint('🟢 [BANNER] No message to display, returning empty widget');
       return const SizedBox.shrink();
     }
 
-    debugPrint('🟢 [BANNER] Displaying message: ${message.text}');
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),

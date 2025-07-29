@@ -45,8 +45,8 @@ class AuthSocialService {
 
       // 🔧 REMOVED: All validation logic moved to DeepLinkHandler
       // The deep link handler will handle the OAuth callback and show appropriate messages
+      // 🔧 REMOVED: Don't sign out here - let the deep link handler handle it
 
-      await _client.auth.signOut();
       onSuccess();
       return null;
     } on AuthException catch (e) {
@@ -102,6 +102,7 @@ class AuthSocialService {
 
       // 🔧 REMOVED: All the validation logic is now handled in DeepLinkHandler
       // The deep link handler will process the OAuth callback and handle all error cases
+      // 🔧 REMOVED: Don't sign out here - let the deep link handler handle it
 
       return null;
     } on TimeoutException {
