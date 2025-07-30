@@ -85,11 +85,19 @@ class _FindJobsScreenState extends ConsumerState<FindJobsScreen> {
       curve: Curves.easeInOut,
       child: Column(
         children: [
-          // Header with Find Jobs text and Saved Jobs icon
           Container(
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
+                if (context.canPop())
+                  IconButton(
+                    onPressed: () => context.pop(),
+                    icon: const Icon(
+                      Icons.arrow_back,
+                      color: AppColors.textPrimary,
+                      size: 24,
+                    ),
+                  ),
                 const Text(
                   'Find Jobs',
                   style: TextStyle(
