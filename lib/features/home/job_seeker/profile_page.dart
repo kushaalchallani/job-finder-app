@@ -3,6 +3,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:job_finder_app/core/theme/app_theme.dart';
 import 'package:job_finder_app/core/providers/profile_provider.dart';
 import 'package:job_finder_app/features/home/job_seeker/widgets/widgets.dart';
@@ -41,14 +42,27 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header
-                const Text(
-                  'Profile',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
+                // Header with Settings Icon
+                Row(
+                  children: [
+                    const Text(
+                      'Profile',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      onPressed: () => context.push('/seeker-settings'),
+                      icon: const Icon(
+                        Icons.settings_outlined,
+                        color: AppColors.textPrimary,
+                        size: 24,
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 20),
 

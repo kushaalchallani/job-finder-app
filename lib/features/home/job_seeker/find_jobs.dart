@@ -104,8 +104,8 @@ class _FindJobsScreenState extends ConsumerState<FindJobsScreen> {
                     context.push('/saved-jobs');
                   },
                   icon: const Icon(
-                    Icons.bookmark,
-                    color: AppColors.primary,
+                    Icons.bookmark_outline,
+                    color: AppColors.textPrimary,
                     size: 24,
                   ),
                 ),

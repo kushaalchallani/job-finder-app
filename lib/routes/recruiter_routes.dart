@@ -4,7 +4,7 @@ import 'package:job_finder_app/features/home/recruiter/pages/application/manage_
 import 'package:job_finder_app/features/home/recruiter/pages/jobs/create_job.dart';
 import 'package:job_finder_app/features/home/recruiter/pages/jobs/edit_job.dart';
 import 'package:job_finder_app/features/home/recruiter/recruiter_profile_screen.dart';
-import 'package:job_finder_app/features/home/recruiter/pages/settings_page.dart';
+import 'package:job_finder_app/features/home/recruiter/pages/rec_settings_page.dart';
 import 'package:job_finder_app/features/home/recruiter/recruiter_applications_screen.dart';
 import 'package:job_finder_app/features/home/recruiter/recruiter_dashboard.dart';
 import 'package:job_finder_app/features/home/recruiter/recruiter_main.dart';
