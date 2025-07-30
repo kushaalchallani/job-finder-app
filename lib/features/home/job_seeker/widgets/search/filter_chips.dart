@@ -13,42 +13,53 @@ class FilterChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final filters = ['All', 'full-time', 'part-time', 'remote', 'contract'];
+    final filters = [
+      {'value': 'All', 'display': 'All'},
+      {'value': 'full-time', 'display': 'FULL TIME'},
+      {'value': 'part-time', 'display': 'PART TIME'},
+      {'value': 'remote', 'display': 'REMOTE'},
+      {'value': 'contract', 'display': 'CONTRACT'},
+    ];
 
-    // ignore: sized_box_for_whitespace
     return Container(
-      height: 50,
+      height: 40,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         itemCount: filters.length,
         itemBuilder: (context, index) {
           final filter = filters[index];
-          final isSelected = selectedFilter == filter;
+          final isSelected = selectedFilter == filter['value'];
 
           return Container(
-            margin: const EdgeInsets.only(right: 12),
+            margin: const EdgeInsets.only(right: 8),
             child: GestureDetector(
-              onTap: () => onFilterChanged(filter),
+              onTap: () => onFilterChanged(filter['value']!),
               child: Container(
+                constraints: const BoxConstraints(minWidth: 80, minHeight: 32),
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
                   color: isSelected ? AppColors.primary : AppColors.surface,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: isSelected ? AppColors.primary : AppColors.grey300,
+                    width: 1,
                   ),
                 ),
-                child: Text(
-                  filter == 'All'
-                      ? 'All'
-                      : filter.replaceAll('-', ' ').toUpperCase(),
-                  style: TextStyle(
-                    color: isSelected ? AppColors.onPrimary : AppColors.grey700,
-                    fontWeight: FontWeight.w500,
+                child: Center(
+                  child: Text(
+                    filter['display']!,
+                    style: TextStyle(
+                      color: isSelected
+                          ? AppColors.onPrimary
+                          : AppColors.grey700,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
                 ),
               ),
