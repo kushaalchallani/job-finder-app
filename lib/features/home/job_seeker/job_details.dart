@@ -91,7 +91,6 @@ class _JobDetailsScreenState extends ConsumerState<JobDetailsScreen> {
 
                 // Contact Section
                 ContactSection(job: job),
-                const SizedBox(height: 100), // Space for bottom buttons
               ],
             ),
           ),
@@ -102,7 +101,6 @@ class _JobDetailsScreenState extends ConsumerState<JobDetailsScreen> {
           job: job,
           onApply: () {
             // Handle successful application
-            // You can add navigation or other logic here
           },
         ),
       ],

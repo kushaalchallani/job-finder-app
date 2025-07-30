@@ -7,6 +7,8 @@ import 'package:job_finder_app/features/home/job_seeker/profile/edit_profile_scr
 import 'package:job_finder_app/features/home/job_seeker/profile/edit_skills_screen.dart';
 import 'package:job_finder_app/features/home/job_seeker/profile/upload_resume_screen.dart';
 import 'package:job_finder_app/features/home/job_seeker/widgets/applications_screen.dart';
+import 'package:job_finder_app/features/home/job_seeker/find_jobs.dart';
+import 'package:job_finder_app/features/home/job_seeker/saved_jobs_screen.dart';
 
 class JobSeekerRoutes {
   static final routes = [
@@ -46,6 +48,16 @@ class JobSeekerRoutes {
       path: '/applications',
       name: 'applications',
       builder: (context, state) => const ApplicationsScreen(),
+    ),
+    GoRoute(
+      path: '/find-jobs',
+      name: 'find-jobs',
+      builder: (context, state) => const FindJobsScreen(),
+    ),
+    GoRoute(
+      path: '/saved-jobs',
+      name: 'saved-jobs',
+      builder: (context, state) => const SavedJobsScreen(),
     ),
   ];
 }

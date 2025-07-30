@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:job_finder_app/core/theme/app_theme.dart';
 import 'package:job_finder_app/core/widgets/button.dart';
 import 'package:job_finder_app/core/providers/application_provider.dart';
+import 'package:job_finder_app/core/providers/job_provider.dart';
 import 'package:job_finder_app/models/job_opening.dart';
 
 class JobActions extends ConsumerStatefulWidget {
@@ -17,7 +18,6 @@ class JobActions extends ConsumerStatefulWidget {
 }
 
 class _JobActionsState extends ConsumerState<JobActions> {
-  bool _isSaved = false;
   bool _isApplying = false;
 
   @override
@@ -38,47 +38,114 @@ class _JobActionsState extends ConsumerState<JobActions> {
         children: [
           // Save Button
           Expanded(
-            child: OutlinedButton(
-              onPressed: () {
-                setState(() {
-                  _isSaved = !_isSaved;
-                });
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      _isSaved ? 'Job saved!' : 'Job removed from saved',
+            child: Consumer(
+              builder: (context, ref, child) {
+                final isSavedAsync = ref.watch(
+                  isJobSavedProvider(widget.job.id),
+                );
+
+                return isSavedAsync.when(
+                  data: (isSaved) => OutlinedButton(
+                    onPressed: () async {
+                      final success = await ref
+                          .read(savedJobsNotifierProvider.notifier)
+                          .toggleSavedJob(widget.job.id, ref);
+
+                      if (success && mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              isSaved ? 'Job removed from saved' : 'Job saved!',
+                            ),
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      }
+                    },
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      side: BorderSide(
+                        color: isSaved ? AppColors.primary : AppColors.grey300,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
-                    duration: const Duration(seconds: 2),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          isSaved ? Icons.bookmark : Icons.bookmark_outline,
+                          color: isSaved
+                              ? AppColors.primary
+                              : AppColors.grey600,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Save',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: isSaved
+                                ? AppColors.primary
+                                : AppColors.grey600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  loading: () => OutlinedButton(
+                    onPressed: null,
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      side: const BorderSide(color: AppColors.grey300),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.bookmark_outline, color: AppColors.grey600),
+                        SizedBox(width: 8),
+                        Text(
+                          'Save',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.grey600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  error: (_, __) => OutlinedButton(
+                    onPressed: null,
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      side: const BorderSide(color: AppColors.grey300),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.bookmark_outline, color: AppColors.grey600),
+                        SizedBox(width: 8),
+                        Text(
+                          'Save',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.grey600,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 );
               },
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                side: BorderSide(
-                  color: _isSaved ? AppColors.primary : AppColors.grey300,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    _isSaved ? Icons.bookmark : Icons.bookmark_outline,
-                    color: _isSaved ? AppColors.primary : AppColors.grey600,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Save',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: _isSaved ? AppColors.primary : AppColors.grey600,
-                    ),
-                  ),
-                ],
-              ),
             ),
           ),
           const SizedBox(width: 16),

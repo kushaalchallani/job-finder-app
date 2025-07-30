@@ -32,10 +32,10 @@ class QuickStats extends StatelessWidget {
         const SizedBox(width: 12),
         Expanded(
           child: _buildStatCard(
-            'Interviews',
-            '${stats['interviews']}',
+            'Offers',
+            '${stats['offers']}',
             AppColors.success,
-            Icons.video_call_outlined,
+            Icons.celebration_outlined,
           ),
         ),
       ],
@@ -48,7 +48,8 @@ class QuickStats extends StatelessWidget {
     Color color,
     IconData icon,
   ) {
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -63,15 +64,24 @@ class QuickStats extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Icon(icon, color: color, size: 24),
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: color, size: 24),
+          ),
           const SizedBox(height: 8),
-          Text(
-            count,
+          AnimatedDefaultTextStyle(
+            duration: const Duration(milliseconds: 300),
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
               color: color,
             ),
+            child: Text(count),
           ),
           const SizedBox(height: 4),
           Text(

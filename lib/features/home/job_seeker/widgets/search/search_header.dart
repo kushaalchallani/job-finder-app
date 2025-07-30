@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:job_finder_app/core/theme/app_theme.dart';
 
 class SearchHeader extends StatefulWidget {
@@ -42,8 +43,19 @@ class _SearchHeaderState extends State<SearchHeader> {
 
   @override
   Widget build(BuildContext context) {
+    final canPop = context.canPop();
+
     return Row(
       children: [
+        // Back Button - only show if there's a previous page
+        if (canPop) ...[
+          IconButton(
+            icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+            onPressed: () => context.pop(),
+            tooltip: "Go back",
+          ),
+          const SizedBox(width: 8),
+        ],
         // Expanded Search Bar
         Expanded(
           child: TextField(
