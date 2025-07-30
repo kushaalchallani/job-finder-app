@@ -7,8 +7,8 @@ import 'package:job_finder_app/core/utils/logout_dialog.dart';
 import 'package:job_finder_app/core/widgets/version_control.dart';
 import 'package:job_finder_app/features/home/recruiter/widgets/applicant-profile/settings_user_profile.dart';
 
-class SettingsPage extends ConsumerWidget {
-  const SettingsPage({Key? key}) : super(key: key);
+class JobSeekerSettingsPage extends ConsumerWidget {
+  const JobSeekerSettingsPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
