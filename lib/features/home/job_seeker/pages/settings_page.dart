@@ -83,7 +83,7 @@ class JobSeekerSettingsPage extends ConsumerWidget {
                         ),
                       ),
                       subtitle: const Text(
-                        'Edit profile, resume, and account details',
+                        'Change email and password',
                         style: TextStyle(
                           fontSize: 14,
                           color: AppColors.textSecondary,
@@ -95,7 +95,7 @@ class JobSeekerSettingsPage extends ConsumerWidget {
                         color: AppColors.textSecondary,
                       ),
                       onTap: () {
-                        // TODO: Navigate to account management page
+                        context.go('/job-seeker/manage-account');
                       },
                     ),
                     Container(

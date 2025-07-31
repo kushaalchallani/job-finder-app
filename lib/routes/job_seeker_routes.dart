@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 import 'package:job_finder_app/features/home/job_seeker/pages/job_details.dart';
 import 'package:job_finder_app/features/home/job_seeker/job_seeker_main.dart';
 import 'package:job_finder_app/features/home/job_seeker/pages/settings_page.dart';
+import 'package:job_finder_app/features/home/job_seeker/pages/manage_account_page.dart';
 import 'package:job_finder_app/features/home/job_seeker/pages/profile/edit_education_screen.dart';
 import 'package:job_finder_app/features/home/job_seeker/pages/profile/edit_experience_screen.dart';
 import 'package:job_finder_app/features/home/job_seeker/pages/profile/edit_profile_screen.dart';
@@ -63,6 +64,11 @@ class JobSeekerRoutes {
       path: '/saved-jobs',
       name: 'saved-jobs',
       builder: (context, state) => const SavedJobsScreen(),
+    ),
+    GoRoute(
+      path: '/job-seeker/manage-account',
+      name: 'job-seeker-manage-account',
+      builder: (context, state) => const ManageAccountPage(),
     ),
   ];
 }

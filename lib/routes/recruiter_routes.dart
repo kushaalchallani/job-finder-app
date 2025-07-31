@@ -5,6 +5,7 @@ import 'package:job_finder_app/features/home/recruiter/pages/jobs/create_job.dar
 import 'package:job_finder_app/features/home/recruiter/pages/jobs/edit_job.dart';
 import 'package:job_finder_app/features/home/recruiter/recruiter_profile_screen.dart';
 import 'package:job_finder_app/features/home/recruiter/pages/rec_settings_page.dart';
+import 'package:job_finder_app/features/home/recruiter/pages/manage_account_page.dart';
 import 'package:job_finder_app/features/home/recruiter/recruiter_applications_screen.dart';
 import 'package:job_finder_app/features/home/recruiter/recruiter_dashboard.dart';
 import 'package:job_finder_app/features/home/recruiter/recruiter_main.dart';
@@ -82,6 +83,11 @@ class RecruiterRoutes {
         );
         return ManageApplicationsScreen(jobId: jobId, job: job);
       },
+    ),
+    GoRoute(
+      path: '/recruiter/manage-account',
+      name: 'recruiter-manage-account',
+      builder: (context, state) => const RecruiterManageAccountPage(),
     ),
   ];
 }

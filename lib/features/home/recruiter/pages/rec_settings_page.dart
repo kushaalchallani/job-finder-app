@@ -60,6 +60,50 @@ class SettingsPage extends ConsumerWidget {
                 ),
                 child: Column(
                   children: [
+                    // Manage Account Option
+                    ListTile(
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(
+                          Icons.person_outline,
+                          color: AppColors.primary,
+                          size: 20,
+                        ),
+                      ),
+                      title: const Text(
+                        'Manage Account',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      subtitle: const Text(
+                        'Change email and password',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      trailing: const Icon(
+                        Icons.arrow_forward_ios,
+                        size: 16,
+                        color: AppColors.textSecondary,
+                      ),
+                      onTap: () {
+                        context.push('/recruiter/manage-account');
+                      },
+                    ),
+                    Container(
+                      margin: const EdgeInsets.only(left: 56, right: 16),
+                      height: 1,
+                      color: AppColors.border,
+                    ),
+
                     // Logout Option
                     ListTile(
                       leading: Container(

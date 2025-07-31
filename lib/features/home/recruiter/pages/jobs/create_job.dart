@@ -32,6 +32,8 @@ class _CreateJobScreenState extends ConsumerState<CreateJobScreen> {
   List<String> _requirements = [];
   List<String> _benefits = [];
   bool _isLoading = false;
+  String? _requirementsError;
+  String? _benefitsError;
 
   @override
   void initState() {
@@ -119,6 +121,7 @@ class _CreateJobScreenState extends ConsumerState<CreateJobScreen> {
                 requirements: _requirements,
                 onAddRequirement: _addRequirement,
                 onRemoveRequirement: _removeRequirement,
+                errorMessage: _requirementsError,
               ),
               const SizedBox(height: 20),
 
@@ -128,6 +131,7 @@ class _CreateJobScreenState extends ConsumerState<CreateJobScreen> {
                 benefits: _benefits,
                 onAddBenefit: _addBenefit,
                 onRemoveBenefit: _removeBenefit,
+                errorMessage: _benefitsError,
               ),
               const SizedBox(height: 32),
 
@@ -147,8 +151,55 @@ class _CreateJobScreenState extends ConsumerState<CreateJobScreen> {
       child: PrimaryButton(
         text: 'Create Job',
         onPressed: () {
+          // Clear previous error messages
+          setState(() {
+            _requirementsError = null;
+            _benefitsError = null;
+          });
+
           if (_formKey.currentState!.validate()) {
+            // Additional validation for requirements and benefits when publishing
+            if (_selectedStatus == 'active' && _requirements.isEmpty) {
+              setState(() {
+                _requirementsError =
+                    'Please add at least one requirement for the job';
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    'Please add at least one requirement for the job',
+                  ),
+                  backgroundColor: Colors.orange,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+              return;
+            }
+
+            if (_selectedStatus == 'active' && _benefits.isEmpty) {
+              setState(() {
+                _benefitsError = 'Please add at least one benefit for the job';
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Please add at least one benefit for the job'),
+                  backgroundColor: Colors.orange,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+              return;
+            }
+
             _createJob(status: _selectedStatus);
+          } else {
+            // Show a snackbar to inform user about validation errors
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Please fill in all required fields correctly'),
+                backgroundColor: Colors.orange,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
           }
         },
         isLoading: _isLoading,
@@ -161,6 +212,7 @@ class _CreateJobScreenState extends ConsumerState<CreateJobScreen> {
       setState(() {
         _requirements.add(_requirementController.text.trim());
         _requirementController.clear();
+        _requirementsError = null; // Clear error when requirement is added
       });
     }
   }
@@ -168,6 +220,10 @@ class _CreateJobScreenState extends ConsumerState<CreateJobScreen> {
   void _removeRequirement(String requirement) {
     setState(() {
       _requirements.remove(requirement);
+      // Set error if no requirements left and job is active
+      if (_requirements.isEmpty && _selectedStatus == 'active') {
+        _requirementsError = 'Please add at least one requirement for the job';
+      }
     });
   }
 
@@ -176,6 +232,7 @@ class _CreateJobScreenState extends ConsumerState<CreateJobScreen> {
       setState(() {
         _benefits.add(_benefitController.text.trim());
         _benefitController.clear();
+        _benefitsError = null; // Clear error when benefit is added
       });
     }
   }
@@ -183,10 +240,28 @@ class _CreateJobScreenState extends ConsumerState<CreateJobScreen> {
   void _removeBenefit(String benefit) {
     setState(() {
       _benefits.remove(benefit);
+      // Set error if no benefits left and job is active
+      if (_benefits.isEmpty && _selectedStatus == 'active') {
+        _benefitsError = 'Please add at least one benefit for the job';
+      }
     });
   }
 
   void _saveDraft() async {
+    // For drafts, we'll allow saving even with validation errors, but warn the user
+    if (_titleController.text.trim().isEmpty ||
+        _companyController.text.trim().isEmpty ||
+        _locationController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Draft saved, but please fill in required fields for a complete job posting',
+          ),
+          backgroundColor: Colors.orange,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
     await _createJob(status: 'paused');
   }
 

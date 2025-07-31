@@ -24,6 +24,12 @@ class BasicInformationSection extends StatelessWidget {
         titleController,
         'e.g., Software Engineer',
         required: true,
+        validator: (value) {
+          if (value == null || value.trim().isEmpty) {
+            return 'Job title is required';
+          }
+          return null;
+        },
       ),
       const SizedBox(height: 16),
       _buildInputField(
@@ -31,6 +37,12 @@ class BasicInformationSection extends StatelessWidget {
         companyController,
         'e.g., Tech Corp',
         required: true,
+        validator: (value) {
+          if (value == null || value.trim().isEmpty) {
+            return 'Company name is required';
+          }
+          return null;
+        },
       ),
       const SizedBox(height: 16),
       _buildInputField(
@@ -38,6 +50,12 @@ class BasicInformationSection extends StatelessWidget {
         locationController,
         'e.g., New York, NY',
         required: true,
+        validator: (value) {
+          if (value == null || value.trim().isEmpty) {
+            return 'Location is required';
+          }
+          return null;
+        },
       ),
     ]);
   }
@@ -80,6 +98,7 @@ class BasicInformationSection extends StatelessWidget {
     TextEditingController controller,
     String hint, {
     bool required = false,
+    String? Function(String?)? validator,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -99,7 +118,11 @@ class BasicInformationSection extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: AppColors.grey200),
           ),
-          child: AuthTextField(controller: controller, label: hint),
+          child: ValidatedTextField(
+            controller: controller,
+            label: hint,
+            validator: validator,
+          ),
         ),
       ],
     );
@@ -297,6 +320,15 @@ class JobDescriptionSection extends StatelessWidget {
         'Describe the role, responsibilities, and what the candidate will be doing...',
         maxLines: 6,
         required: true,
+        validator: (value) {
+          if (value == null || value.trim().isEmpty) {
+            return 'Job description is required';
+          }
+          if (value.trim().length < 50) {
+            return 'Description must be at least 50 characters long';
+          }
+          return null;
+        },
       ),
     ]);
   }
@@ -340,6 +372,7 @@ class JobDescriptionSection extends StatelessWidget {
     String hint, {
     int maxLines = 1,
     bool required = false,
+    String? Function(String?)? validator,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -359,7 +392,12 @@ class JobDescriptionSection extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: AppColors.grey200),
           ),
-          child: AuthTextField(controller: controller, label: hint),
+          child: ValidatedTextField(
+            controller: controller,
+            label: hint,
+            validator: validator,
+            maxLines: maxLines,
+          ),
         ),
       ],
     );
@@ -371,6 +409,7 @@ class RequirementsSection extends StatelessWidget {
   final List<String> requirements;
   final VoidCallback onAddRequirement;
   final Function(String) onRemoveRequirement;
+  final String? errorMessage;
 
   const RequirementsSection({
     Key? key,
@@ -378,6 +417,7 @@ class RequirementsSection extends StatelessWidget {
     required this.requirements,
     required this.onAddRequirement,
     required this.onRemoveRequirement,
+    this.errorMessage,
   }) : super(key: key);
 
   @override
@@ -390,6 +430,7 @@ class RequirementsSection extends StatelessWidget {
         onAddRequirement,
         onRemoveRequirement,
         'e.g., 3+ years experience with React',
+        errorMessage: errorMessage,
       ),
     ]);
   }
@@ -433,8 +474,9 @@ class RequirementsSection extends StatelessWidget {
     List<String> items,
     VoidCallback onAdd,
     Function(String) onRemove,
-    String hint,
-  ) {
+    String hint, {
+    String? errorMessage,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -454,7 +496,11 @@ class RequirementsSection extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppColors.grey50,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.grey200),
+                  border: Border.all(
+                    color: errorMessage != null
+                        ? Colors.red
+                        : AppColors.grey200,
+                  ),
                 ),
                 child: AuthTextField(controller: controller, label: hint),
               ),
@@ -474,6 +520,13 @@ class RequirementsSection extends StatelessWidget {
             ),
           ],
         ),
+        if (errorMessage != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            errorMessage,
+            style: const TextStyle(color: Colors.red, fontSize: 12),
+          ),
+        ],
         if (items.isNotEmpty) ...[
           const SizedBox(height: 12),
           Wrap(
@@ -529,6 +582,7 @@ class BenefitsSection extends StatelessWidget {
   final List<String> benefits;
   final VoidCallback onAddBenefit;
   final Function(String) onRemoveBenefit;
+  final String? errorMessage;
 
   const BenefitsSection({
     Key? key,
@@ -536,6 +590,7 @@ class BenefitsSection extends StatelessWidget {
     required this.benefits,
     required this.onAddBenefit,
     required this.onRemoveBenefit,
+    this.errorMessage,
   }) : super(key: key);
 
   @override
@@ -548,6 +603,7 @@ class BenefitsSection extends StatelessWidget {
         onAddBenefit,
         onRemoveBenefit,
         'e.g., Health insurance, Remote work',
+        errorMessage: errorMessage,
       ),
     ]);
   }
@@ -591,8 +647,9 @@ class BenefitsSection extends StatelessWidget {
     List<String> items,
     VoidCallback onAdd,
     Function(String) onRemove,
-    String hint,
-  ) {
+    String hint, {
+    String? errorMessage,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -612,7 +669,11 @@ class BenefitsSection extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppColors.grey50,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.grey200),
+                  border: Border.all(
+                    color: errorMessage != null
+                        ? Colors.red
+                        : AppColors.grey200,
+                  ),
                 ),
                 child: AuthTextField(controller: controller, label: hint),
               ),
@@ -632,6 +693,13 @@ class BenefitsSection extends StatelessWidget {
             ),
           ],
         ),
+        if (errorMessage != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            errorMessage,
+            style: const TextStyle(color: Colors.red, fontSize: 12),
+          ),
+        ],
         if (items.isNotEmpty) ...[
           const SizedBox(height: 12),
           Wrap(
