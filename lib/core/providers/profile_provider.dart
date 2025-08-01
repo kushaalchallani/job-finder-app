@@ -8,7 +8,7 @@ import 'package:job_finder_app/core/providers/auth_provider.dart';
 final userProfileProvider = FutureProvider<UserProfile?>((ref) async {
   // Watch auth state to refresh when user changes
   ref.watch(authStateProvider);
-  
+
   final supabase = Supabase.instance.client;
   final user = supabase.auth.currentUser;
 
@@ -21,7 +21,31 @@ final userProfileProvider = FutureProvider<UserProfile?>((ref) async {
         .from('profiles')
         .select()
         .eq('id', user.id)
-        .maybeSingle(); // 🔧 FIXED: Changed from .single() to .maybeSingle()
+        .maybeSingle();
+
+    if (response == null) {
+      return null;
+    }
+
+    return UserProfile.fromJson(response);
+  } catch (e) {
+    return null;
+  }
+});
+
+// Recruiter Profile Provider - fetches a specific user's profile by ID
+final recruiterProfileProvider = FutureProvider.family<UserProfile?, String>((
+  ref,
+  userId,
+) async {
+  final supabase = Supabase.instance.client;
+
+  try {
+    final response = await supabase
+        .from('profiles')
+        .select()
+        .eq('id', userId)
+        .maybeSingle();
 
     if (response == null) {
       return null;
@@ -38,9 +62,8 @@ final userProfileProvider = FutureProvider<UserProfile?>((ref) async {
 final userExperiencesProvider = FutureProvider<List<UserExperience>>((
   ref,
 ) async {
-  // Watch auth state to refresh when user changes
   ref.watch(authStateProvider);
-  
+
   final supabase = Supabase.instance.client;
   final user = supabase.auth.currentUser;
 
@@ -62,9 +85,8 @@ final userExperiencesProvider = FutureProvider<List<UserExperience>>((
 
 // User Skills Provider
 final userSkillsProvider = FutureProvider<List<UserSkill>>((ref) async {
-  // Watch auth state to refresh when user changes
   ref.watch(authStateProvider);
-  
+
   final supabase = Supabase.instance.client;
   final user = supabase.auth.currentUser;
 
@@ -86,9 +108,8 @@ final userSkillsProvider = FutureProvider<List<UserSkill>>((ref) async {
 
 // User Resumes Provider
 final userResumesProvider = FutureProvider<List<UserResume>>((ref) async {
-  // Watch auth state to refresh when user changes
   ref.watch(authStateProvider);
-  
+
   final supabase = Supabase.instance.client;
   final user = supabase.auth.currentUser;
 
@@ -161,7 +182,7 @@ final profileCompletionProvider = Provider<double>((ref) {
 final userEducationProvider = FutureProvider<List<UserEducation>>((ref) async {
   // Watch auth state to refresh when user changes
   ref.watch(authStateProvider);
-  
+
   final supabase = Supabase.instance.client;
   final user = supabase.auth.currentUser;
 

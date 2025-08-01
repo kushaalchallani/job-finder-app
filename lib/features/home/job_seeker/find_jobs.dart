@@ -89,9 +89,9 @@ class _FindJobsScreenState extends ConsumerState<FindJobsScreen> {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                if (context.canPop())
+                if (Navigator.of(context).canPop())
                   IconButton(
-                    onPressed: () => context.pop(),
+                    onPressed: () => Navigator.of(context).pop(),
                     icon: const Icon(
                       Icons.arrow_back,
                       color: AppColors.textPrimary,

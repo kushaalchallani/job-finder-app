@@ -14,7 +14,7 @@ class JobDescriptionSection extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
             color: AppColors.shadowLight,
@@ -26,21 +26,50 @@ class JobDescriptionSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Job Description',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
-            ),
+          // Section Header
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.description_outlined,
+                  color: AppColors.primary,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'Job Description',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 12),
-          Text(
-            job.description,
-            style: TextStyle(
-              fontSize: 14,
-              color: AppColors.grey700,
-              height: 1.5,
+          const SizedBox(height: 20),
+
+          // Description Content
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.grey50,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.grey200, width: 1),
+            ),
+            child: Text(
+              job.description,
+              style: const TextStyle(
+                fontSize: 16,
+                color: AppColors.textPrimary,
+                height: 1.6,
+                fontWeight: FontWeight.w400,
+              ),
             ),
           ),
         ],
