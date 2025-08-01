@@ -1,22 +1,16 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:job_finder_app/features/auth/pages/splash_page.dart';
 import 'package:job_finder_app/routes/auth_routes.dart';
 import 'package:job_finder_app/routes/job_seeker_routes.dart';
 import 'package:job_finder_app/routes/recruiter_routes.dart';
-import 'package:job_finder_app/routes/router_utils.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:job_finder_app/core/providers/auth_provider.dart';
 
 class AppRouter {
-  static final navigatorKey = GlobalKey<NavigatorState>();
-
   static final router = GoRouter(
-    navigatorKey: navigatorKey,
+    navigatorKey: globalNavigatorKey,
     initialLocation: '/',
-    refreshListenable: GoRouterRefreshStream(
-      Supabase.instance.client.auth.onAuthStateChange,
-    ),
+    restorationScopeId: null, // Disable route restoration
     routes: [
       GoRoute(
         path: '/',
@@ -27,7 +21,8 @@ class AppRouter {
       ...JobSeekerRoutes.routes,
       ...RecruiterRoutes.routes,
     ],
-    redirect: RouterUtils.handleRedirect,
+    // Temporarily removed redirect to test auth provider
+    // redirect: RouterUtils.handleRedirect,
   );
 }
 

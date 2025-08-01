@@ -1,8 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:job_finder_app/core/providers/auth_provider.dart';
 import 'package:job_finder_app/features/auth/services/auth_email_service.dart';
 import 'package:job_finder_app/features/auth/services/auth_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -42,6 +40,7 @@ class LoginController extends StateNotifier<LoginState> {
     required String password,
   }) async {
     state = state.copyWith(isLoading: true, error: null);
+
     final error = await AuthEmailService.signInWithEmail(
       email: email,
       password: password,
@@ -52,33 +51,8 @@ class LoginController extends StateNotifier<LoginState> {
       return false;
     }
 
-    // Fetch user role manually from Supabase after login
-    try {
-      final userId = Supabase.instance.client.auth.currentUser?.id;
-      if (userId == null) {
-        throw Exception('User not found');
-      }
-
-      final profile = await Supabase.instance.client
-          .from('profiles')
-          .select('role')
-          .eq('id', userId)
-          .maybeSingle();
-
-      final role = profile?['role'] as String?;
-      final context = navigatorKey.currentContext;
-
-      if (role == 'seeker') {
-        context?.go('/seeker/home');
-      } else if (role == 'recruiter') {
-        context?.go('/recruiter/home');
-      } else {
-        context?.go('/home');
-      }
-    } catch (e) {
-      navigatorKey.currentContext?.go('/home');
-    }
-
+    // Let the auth provider handle navigation
+    // The authRedirectProvider will automatically redirect based on user role
     state = state.copyWith(isLoading: false);
     return true;
   }

@@ -44,6 +44,7 @@ class RouterUtils {
     final role = session.user.userMetadata?['role'] as String?;
     final isRecruiter = role == 'recruiter';
 
+    // Use named routes to match the auth provider
     if (location == '/home' && isRecruiter) return '/recruiter-home';
     if (location == '/recruiter-home' && !isRecruiter) return '/home';
 

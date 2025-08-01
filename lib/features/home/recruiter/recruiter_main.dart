@@ -27,6 +27,17 @@ class _RecruiterMainScreenState extends ConsumerState<RecruiterMainScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    // Reset navigation to dashboard (index 0) when screen is first loaded
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        _currentIndex = 0;
+      });
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: IndexedStack(index: _currentIndex, children: _tabs),
