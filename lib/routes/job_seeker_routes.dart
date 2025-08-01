@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:job_finder_app/features/home/job_seeker/pages/analytics_page.dart';
 import 'package:job_finder_app/features/home/job_seeker/pages/job_details.dart';
 import 'package:job_finder_app/features/home/job_seeker/job_seeker_main.dart';
 import 'package:job_finder_app/features/home/job_seeker/pages/settings_page.dart';
@@ -75,6 +76,11 @@ class JobSeekerRoutes {
       path: '/job-seeker/manage-account',
       name: 'job-seeker-manage-account',
       builder: (context, state) => const ManageAccountPage(),
+    ),
+    GoRoute(
+      path: '/analytics',
+      name: 'analytics',
+      builder: (context, state) => const AnalyticsPage(),
     ),
   ];
 }

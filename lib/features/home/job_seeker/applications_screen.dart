@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:job_finder_app/core/theme/app_theme.dart';
 import 'package:job_finder_app/core/providers/application_provider.dart';
 import 'package:job_finder_app/models/job_application.dart';
@@ -297,7 +298,7 @@ class _ApplicationsScreenState extends ConsumerState<ApplicationsScreen>
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: GestureDetector(
-        onTap: _showAnalyticsSnackbar,
+        onTap: () => context.push('/analytics'),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           decoration: BoxDecoration(
@@ -384,15 +385,6 @@ class _ApplicationsScreenState extends ConsumerState<ApplicationsScreen>
         'Try changing your filter or apply to more jobs',
       );
     }
-  }
-
-  void _showAnalyticsSnackbar() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Analytics feature coming soon!'),
-        backgroundColor: AppColors.primary,
-      ),
-    );
   }
 
   void _showFindJobsSnackbar() {
