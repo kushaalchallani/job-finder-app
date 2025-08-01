@@ -15,6 +15,7 @@ class JobOpening {
   final DateTime updatedAt;
   final int applicationCount;
   final int viewCount;
+  final String? companyPictureUrl;
 
   JobOpening({
     required this.id,
@@ -33,6 +34,7 @@ class JobOpening {
     required this.updatedAt,
     this.applicationCount = 0,
     this.viewCount = 0,
+    this.companyPictureUrl,
   });
 
   factory JobOpening.fromJson(Map<String, dynamic> json) {
@@ -53,6 +55,7 @@ class JobOpening {
       updatedAt: DateTime.parse(json['updated_at']),
       applicationCount: json['application_count'] ?? 0,
       viewCount: json['view_count'] ?? 0,
+      companyPictureUrl: json['company_picture_url'],
     );
   }
 
@@ -74,6 +77,7 @@ class JobOpening {
       'updated_at': updatedAt.toIso8601String(),
       'application_count': applicationCount,
       'view_count': viewCount,
+      'company_picture_url': companyPictureUrl,
     };
   }
 }

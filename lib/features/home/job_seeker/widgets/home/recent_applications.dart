@@ -45,18 +45,22 @@ class RecentApplications extends ConsumerWidget {
 
             return Column(
               children: jobs.map((job) {
+                final jobId = job['id'] ?? '';
                 final title = job['title'] ?? 'Unknown Position';
                 final company = job['company_name'] ?? 'Unknown Company';
                 final location = job['location'] ?? '';
                 final jobType = job['job_type'] ?? '';
                 final salaryRange = job['salary_range'];
+                final companyPictureUrl = job['company_picture_url'];
 
                 return _buildJobItem(
+                  jobId,
                   title,
                   company,
                   location,
                   jobType,
                   salaryRange,
+                  companyPictureUrl,
                 );
               }).toList(),
             );
@@ -205,115 +209,150 @@ class RecentApplications extends ConsumerWidget {
   }
 
   Widget _buildJobItem(
+    String jobId,
     String title,
     String company,
     String location,
     String jobType,
     String? salaryRange,
+    String? companyPictureUrl,
   ) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.shadowLight,
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
+    return Builder(
+      builder: (context) => Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            context.push('/job-details/$jobId');
+          },
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.grey200,
-              borderRadius: BorderRadius.circular(8),
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.shadowLight,
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-            child: Icon(Icons.business, color: AppColors.grey600),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppColors.grey200,
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                ),
-                Text(
-                  company,
-                  style: TextStyle(fontSize: 14, color: AppColors.grey600),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.location_on_outlined,
-                      size: 12,
-                      color: AppColors.grey500,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      location,
-                      style: TextStyle(fontSize: 12, color: AppColors.grey500),
-                    ),
-                    if (jobType.isNotEmpty) ...[
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.1),
+                  child: companyPictureUrl != null && companyPictureUrl.isNotEmpty
+                      ? ClipRRect(
                           borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          jobType.toUpperCase(),
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w600,
+                          child: Image.network(
+                            companyPictureUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => Icon(
+                              Icons.business,
+                              color: AppColors.grey600,
+                            ),
                           ),
-                        ),
-                      ),
-                    ],
-                  ],
+                        )
+                      : Icon(Icons.business, color: AppColors.grey600),
                 ),
-                if (salaryRange != null && salaryRange.isNotEmpty) ...[
-                  const SizedBox(height: 4),
-                  Row(
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(
-                        Icons.attach_money,
-                        size: 12,
-                        color: AppColors.grey500,
-                      ),
-                      const SizedBox(width: 4),
                       Text(
-                        salaryRange,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: AppColors.grey500,
+                        title,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
                         ),
                       ),
+                      Text(
+                        company,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppColors.grey600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.location_on_outlined,
+                            size: 12,
+                            color: AppColors.grey500,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            location,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppColors.grey500,
+                            ),
+                          ),
+                          if (jobType.isNotEmpty) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                jobType.toUpperCase(),
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      if (salaryRange != null && salaryRange.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.attach_money,
+                              size: 12,
+                              color: AppColors.grey500,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              salaryRange,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppColors.grey500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
-                ],
+                ),
+                Icon(
+                  Icons.arrow_forward_ios,
+                  size: 16,
+                  color: AppColors.grey400,
+                ),
               ],
             ),
           ),
-          Icon(Icons.arrow_forward_ios, size: 16, color: AppColors.grey400),
-        ],
+        ),
       ),
     );
   }

@@ -31,7 +31,11 @@ class JobSeekerSettingsPage extends ConsumerWidget {
           icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () {
             FocusScope.of(context).unfocus();
-            context.pop();
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/home');
+            }
           },
         ),
       ),
@@ -95,7 +99,7 @@ class JobSeekerSettingsPage extends ConsumerWidget {
                         color: AppColors.textSecondary,
                       ),
                       onTap: () {
-                        context.go('/job-seeker/manage-account');
+                        context.push('/job-seeker/manage-account');
                       },
                     ),
                     Container(
@@ -104,49 +108,7 @@ class JobSeekerSettingsPage extends ConsumerWidget {
                       color: AppColors.border,
                     ),
 
-                    // Manage Notifications Option
-                    ListTile(
-                      leading: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColors.warning.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Icon(
-                          Icons.notifications_outlined,
-                          color: AppColors.warning,
-                          size: 20,
-                        ),
-                      ),
-                      title: const Text(
-                        'Manage Notifications',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      subtitle: const Text(
-                        'Configure push and email notifications',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                      trailing: const Icon(
-                        Icons.arrow_forward_ios,
-                        size: 16,
-                        color: AppColors.textSecondary,
-                      ),
-                      onTap: () {
-                        // TODO: Navigate to notifications management page
-                      },
-                    ),
-                    Container(
-                      margin: const EdgeInsets.only(left: 56, right: 16),
-                      height: 1,
-                      color: AppColors.border,
-                    ),
+                    // Removed Manage Notifications Option
 
                     // Logout Option
                     ListTile(

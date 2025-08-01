@@ -130,9 +130,6 @@ class PopularJobs extends ConsumerWidget {
           child: InkWell(
             borderRadius: BorderRadius.circular(12),
             onTap: () => context.push('/job-details/${job.id}'),
-            onHover: (isHovered) {
-              // Add hover effect if needed
-            },
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -141,6 +138,32 @@ class PopularJobs extends ConsumerWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      // Company Logo
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: AppColors.grey200,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child:
+                            job.companyPictureUrl != null &&
+                                job.companyPictureUrl!.isNotEmpty
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.network(
+                                  job.companyPictureUrl!,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      Icon(
+                                        Icons.business,
+                                        color: AppColors.grey600,
+                                      ),
+                                ),
+                              )
+                            : Icon(Icons.business, color: AppColors.grey600),
+                      ),
+                      const SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           job.companyName,
@@ -284,133 +307,8 @@ class PopularJobs extends ConsumerWidget {
                       Text(
                         job.location,
                         style: TextStyle(
-                          color: AppColors.grey600,
                           fontSize: 12,
-                        ),
-                      ),
-                      if (job.salaryRange != null) ...[
-                        const SizedBox(width: 12),
-                        Icon(
-                          Icons.attach_money,
-                          size: 14,
                           color: AppColors.grey600,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          job.salaryRange!,
-                          style: TextStyle(
-                            color: AppColors.grey600,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-
-                  if (job.requirements.isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 4,
-                      runSpacing: 4,
-                      children: job.requirements
-                          .take(2)
-                          .map(
-                            (req) => Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.grey100,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                req,
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  color: AppColors.grey700,
-                                ),
-                              ),
-                            ),
-                          )
-                          .toList(),
-                    ),
-                  ],
-
-                  // Popularity Indicators
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      // View Count
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.visibility_outlined,
-                            size: 14,
-                            color: AppColors.grey600,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${job.viewCount} views',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: AppColors.grey600,
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(width: 16),
-
-                      // Application Count
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.people_outline,
-                            size: 14,
-                            color: AppColors.grey600,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${job.applicationCount} applied',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: AppColors.grey600,
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const Spacer(),
-
-                      // Hot Job Indicator
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.warning.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.local_fire_department,
-                              size: 12,
-                              color: AppColors.warning,
-                            ),
-                            const SizedBox(width: 2),
-                            Text(
-                              'HOT',
-                              style: TextStyle(
-                                fontSize: 8,
-                                color: AppColors.warning,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
                         ),
                       ),
                     ],

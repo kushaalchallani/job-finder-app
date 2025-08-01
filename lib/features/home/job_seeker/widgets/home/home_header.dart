@@ -33,21 +33,7 @@ class HomeHeader extends StatelessWidget {
             ),
           ],
         ),
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.shadowMedium,
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: const Icon(Icons.notifications_outlined, size: 24),
-        ),
+        // Removed notification button
       ],
     );
   }

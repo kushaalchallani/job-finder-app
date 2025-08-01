@@ -81,7 +81,7 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
                   Expanded(
                     child: _buildMetricCard(
                       'Total Jobs',
-                      '${analytics.totalJobs}',
+                      '${analytics['totalJobs'] ?? 0}',
                       Icons.work,
                       AppColors.primary,
                     ),
@@ -89,8 +89,8 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: _buildMetricCard(
-                      'Total Applications',
-                      '${analytics.totalApplications}',
+                      'Active Jobs',
+                      '${analytics['activeJobs'] ?? 0}',
                       Icons.people,
                       AppColors.success,
                     ),
@@ -102,8 +102,8 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
                 children: [
                   Expanded(
                     child: _buildMetricCard(
-                      'Total Views',
-                      '${analytics.totalViews}',
+                      'Total Applications',
+                      '${analytics['totalApplications'] ?? 0}',
                       Icons.visibility,
                       AppColors.warning,
                     ),
@@ -111,8 +111,8 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: _buildMetricCard(
-                      'Avg. Time to Fill',
-                      '${analytics.averageTimeToFill.toStringAsFixed(1)} days',
+                      'Recent Jobs',
+                      '${(analytics['recentJobs'] as List?)?.length ?? 0}',
                       Icons.schedule,
                       AppColors.brandPurple,
                     ),
@@ -121,20 +121,14 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
               ),
               const SizedBox(height: 24),
 
-              // Conversion Rate Card
-              _buildConversionRateCard(analytics.conversionRates),
-              const SizedBox(height: 24),
-
               // Application Status Chart
-              _buildApplicationStatusChart(analytics.applicationStatusCounts),
+              _buildApplicationStatusChart(
+                Map<String, int>.from(analytics['statusCounts'] ?? {}),
+              ),
               const SizedBox(height: 24),
 
-              // Weekly Trends Chart
-              _buildWeeklyTrendsChart(analytics.weeklyTrends),
-              const SizedBox(height: 24),
-
-              // Top Performing Jobs
-              _buildTopPerformingJobs(analytics.topPerformingJobs),
+              // Recent Jobs List
+              _buildRecentJobsList(analytics['recentJobs'] as List? ?? []),
             ],
           ),
           loading: () => const Center(child: CircularProgressIndicator()),
@@ -206,81 +200,6 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildConversionRateCard(Map<String, double> conversionRates) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.onPrimary,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.textPrimary.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Conversion Rates',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _buildConversionRateItem(
-                  'Overall',
-                  conversionRates['overall'] ?? 0,
-                  AppColors.primary,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildConversionRateItem(
-                  'This Month',
-                  conversionRates['this_month'] ?? 0,
-                  AppColors.success,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildConversionRateItem(
-                  'Last Month',
-                  conversionRates['last_month'] ?? 0,
-                  AppColors.warning,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildConversionRateItem(String label, double rate, Color color) {
-    return Column(
-      children: [
-        Text(
-          '${rate.toStringAsFixed(1)}%',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: color,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(label, style: TextStyle(fontSize: 12, color: AppColors.grey600)),
-      ],
     );
   }
 
@@ -388,15 +307,15 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
         status.substring(1).toLowerCase();
   }
 
-  Widget _buildWeeklyTrendsChart(List<ApplicationTrend> trends) {
-    if (trends.isEmpty) {
+  Widget _buildRecentJobsList(List recentJobs) {
+    if (recentJobs.isEmpty) {
       return Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: AppColors.onPrimary,
           borderRadius: BorderRadius.circular(16),
         ),
-        child: const Center(child: Text('No trend data available')),
+        child: const Center(child: Text('No recent jobs available')),
       );
     }
 
@@ -417,7 +336,7 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Weekly Application Trends',
+            'Recent Jobs',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -425,97 +344,13 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
             ),
           ),
           const SizedBox(height: 16),
-          SizedBox(
-            height: 200,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: trends.map((trend) {
-                final maxApplications = trends
-                    .map((t) => t.applications)
-                    .reduce((a, b) => a > b ? a : b);
-                final height = maxApplications > 0
-                    ? (trend.applications / maxApplications)
-                    : 0.0;
-
-                return Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Text(
-                      '${trend.applications}',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      width: 20,
-                      height: 120 * height,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      trend.week,
-                      style: TextStyle(fontSize: 10, color: AppColors.grey600),
-                    ),
-                  ],
-                );
-              }).toList(),
-            ),
-          ),
+          ...recentJobs.map((job) => _buildRecentJobItem(job)).toList(),
         ],
       ),
     );
   }
 
-  Widget _buildTopPerformingJobs(List<JobPerformance> topJobs) {
-    if (topJobs.isEmpty) {
-      return Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: AppColors.onPrimary,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: const Center(child: Text('No job performance data available')),
-      );
-    }
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.onPrimary,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.textPrimary.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Top Performing Jobs',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 16),
-          ...topJobs.map((job) => _buildJobPerformanceItem(job)).toList(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildJobPerformanceItem(JobPerformance job) {
+  Widget _buildRecentJobItem(dynamic job) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -528,7 +363,7 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            job.jobTitle,
+            job['title'] ?? 'Untitled Job',
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -536,38 +371,25 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
             ),
           ),
           const SizedBox(height: 8),
-          Row(
-            children: [
-              _buildPerformanceMetric('Applications', '${job.applications}'),
-              const SizedBox(width: 16),
-              _buildPerformanceMetric('Views', '${job.views}'),
-              const SizedBox(width: 16),
-              _buildPerformanceMetric(
-                'Conversion',
-                '${job.conversionRate.toStringAsFixed(1)}%',
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: job.status == 'active'
+              color: (job['status'] == 'active')
                   ? AppColors.success.withOpacity(0.1)
                   : AppColors.grey.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: job.status == 'active'
+                color: (job['status'] == 'active')
                     ? AppColors.success
                     : AppColors.grey,
               ),
             ),
             child: Text(
-              job.status.toUpperCase(),
+              (job['status'] ?? 'unknown').toString().toUpperCase(),
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: job.status == 'active'
+                color: (job['status'] == 'active')
                     ? AppColors.success
                     : AppColors.grey,
               ),
@@ -575,23 +397,6 @@ class _AnalyticsOverviewState extends ConsumerState<AnalyticsOverview> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildPerformanceMetric(String label, String value) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        Text(label, style: TextStyle(fontSize: 12, color: AppColors.grey600)),
-      ],
     );
   }
 }

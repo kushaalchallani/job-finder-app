@@ -199,6 +199,32 @@ class SavedJobCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
+                    // Company Logo
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: AppColors.grey200,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child:
+                          job.companyPictureUrl != null &&
+                              job.companyPictureUrl!.isNotEmpty
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.network(
+                                job.companyPictureUrl!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Icon(
+                                      Icons.business,
+                                      color: AppColors.grey600,
+                                    ),
+                              ),
+                            )
+                          : Icon(Icons.business, color: AppColors.grey600),
+                    ),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,

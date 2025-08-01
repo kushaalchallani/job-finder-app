@@ -8,7 +8,8 @@ import 'package:job_finder_app/features/home/job_seeker/pages/profile/edit_exper
 import 'package:job_finder_app/features/home/job_seeker/pages/profile/edit_profile_screen.dart';
 import 'package:job_finder_app/features/home/job_seeker/pages/profile/edit_skills_screen.dart';
 import 'package:job_finder_app/features/home/job_seeker/pages/profile/upload_resume_screen.dart';
-import 'package:job_finder_app/features/home/job_seeker/widgets/applications_screen.dart';
+import 'package:job_finder_app/features/home/job_seeker/profile_page.dart';
+import 'package:job_finder_app/features/home/job_seeker/applications_screen.dart';
 import 'package:job_finder_app/features/home/job_seeker/find_jobs.dart';
 import 'package:job_finder_app/features/home/job_seeker/pages/saved_jobs_screen.dart';
 
@@ -64,6 +65,11 @@ class JobSeekerRoutes {
       path: '/saved-jobs',
       name: 'saved-jobs',
       builder: (context, state) => const SavedJobsScreen(),
+    ),
+    GoRoute(
+      path: '/jobseeker-profile',
+      name: 'jobseeker-profile',
+      builder: (context, state) => const ProfileScreen(),
     ),
     GoRoute(
       path: '/job-seeker/manage-account',

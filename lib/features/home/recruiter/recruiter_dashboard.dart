@@ -11,7 +11,6 @@ import 'package:job_finder_app/features/home/recruiter/widgets/application/recen
 import 'package:job_finder_app/features/home/recruiter/widgets/dashboard/recruiter_dashboard_profile.dart';
 
 class RecruiterDashboard extends ConsumerWidget {
-  // ignore: use_super_parameters
   const RecruiterDashboard({Key? key}) : super(key: key);
 
   @override

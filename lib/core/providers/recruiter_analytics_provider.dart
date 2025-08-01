@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:job_finder_app/models/job_application.dart';
+import 'package:job_finder_app/core/providers/auth_provider.dart';
 
 // Analytics data model
 class RecruiterAnalytics {
@@ -55,134 +56,95 @@ class JobPerformance {
   });
 }
 
-// Provider for comprehensive recruiter analytics
-final recruiterAnalyticsProvider = FutureProvider<RecruiterAnalytics>((
+// Provider for recruiter analytics
+final recruiterAnalyticsProvider = FutureProvider<Map<String, dynamic>>((
   ref,
 ) async {
+  // Watch auth state to refresh when user changes
+  ref.watch(authStateProvider);
+
   final user = Supabase.instance.client.auth.currentUser;
   if (user == null) throw Exception('User not authenticated');
 
   try {
-    // Fetch all jobs for the recruiter
+    // Get all jobs for this recruiter
     final jobsResponse = await Supabase.instance.client
         .from('job_openings')
         .select('id, title, status, created_at')
         .eq('recruiter_id', user.id)
         .order('created_at', ascending: false);
 
-    // Fetch all applications for these jobs
-    final jobIds = jobsResponse.map((job) => job['id']).toList();
-
-    if (jobIds.isEmpty) {
-      return RecruiterAnalytics(
-        applicationStatusCounts: {},
-        weeklyTrends: [],
-        topPerformingJobs: [],
-        conversionRates: {},
-        averageTimeToFill: 0,
-        totalViews: 0,
-        totalApplications: 0,
-        totalJobs: 0,
-      );
+    if (jobsResponse.isEmpty) {
+      return {
+        'totalJobs': 0,
+        'activeJobs': 0,
+        'totalApplications': 0,
+        'recentJobs': [],
+        'applicationTrends': [],
+      };
     }
 
+    // Get applications for all jobs
+    final jobIds = jobsResponse.map((job) => job['id']).toList();
     final applicationsResponse = await Supabase.instance.client
         .from('job_applications')
-        .select('*')
+        .select('id, job_id, status, created_at')
         .inFilter('job_id', jobIds);
 
-    // Process application status counts
-    final Map<String, int> statusCounts = {};
-    for (final app in applicationsResponse) {
-      final status = app['status'] ?? 'pending';
+    // Calculate statistics
+    int activeJobs = 0;
+    int totalApplications = 0;
+    Map<String, int> statusCounts = {};
+
+    for (final job in jobsResponse) {
+      if (job['status'] == 'active') {
+        activeJobs++;
+      }
+    }
+
+    for (final application in applicationsResponse) {
+      totalApplications++;
+      final status = application['status'] as String? ?? 'pending';
       statusCounts[status] = (statusCounts[status] ?? 0) + 1;
     }
 
-    // Calculate weekly trends (last 8 weeks)
-    final List<ApplicationTrend> weeklyTrends = [];
-    final now = DateTime.now();
-    for (int i = 7; i >= 0; i--) {
-      final weekStart = now.subtract(Duration(days: i * 7));
-      final weekEnd = weekStart.add(const Duration(days: 6));
+    // Get recent jobs (last 5)
+    final recentJobs = jobsResponse
+        .take(5)
+        .map(
+          (job) => {
+            'id': job['id'],
+            'title': job['title'],
+            'status': job['status'],
+            'created_at': job['created_at'],
+          },
+        )
+        .toList();
 
-      final weekApplications = applicationsResponse.where((app) {
-        final appliedAt = DateTime.parse(app['applied_at']);
-        return appliedAt.isAfter(weekStart) &&
-            appliedAt.isBefore(weekEnd.add(const Duration(days: 1)));
-      }).length;
+    // Get application trends (last 30 days)
+    final thirtyDaysAgo = DateTime.now().subtract(const Duration(days: 30));
+    final recentApplications = applicationsResponse.where((app) {
+      final createdAt = DateTime.parse(app['created_at']);
+      return createdAt.isAfter(thirtyDaysAgo);
+    }).toList();
 
-      // Mock views data (in real app, you'd track this)
-      final weekViews = weekApplications * 3 + (i * 2); // Mock data
+    final applicationTrends = recentApplications
+        .map(
+          (app) => {
+            'date': app['created_at'].split('T')[0],
+            'status': app['status'],
+          },
+        )
+        .toList();
 
-      weeklyTrends.add(
-        ApplicationTrend(
-          week: '${weekStart.month}/${weekStart.day}',
-          applications: weekApplications,
-          views: weekViews,
-        ),
-      );
-    }
-
-    // Calculate job performance
-    final List<JobPerformance> topPerformingJobs = [];
-    for (final job in jobsResponse) {
-      final jobApplications = applicationsResponse
-          .where((app) => app['job_id'] == job['id'])
-          .toList();
-      // Mock views data since views column doesn't exist yet
-      final views = jobApplications.length * 3; // Mock data
-      final applications = jobApplications.length;
-      final conversionRate = views > 0 ? (applications / views) * 100.0 : 0.0;
-
-      topPerformingJobs.add(
-        JobPerformance(
-          jobId: job['id'],
-          jobTitle: job['title'],
-          applications: applications,
-          views: views,
-          conversionRate: conversionRate,
-          status: job['status'],
-        ),
-      );
-    }
-
-    // Sort by applications (top performing)
-    topPerformingJobs.sort((a, b) => b.applications.compareTo(a.applications));
-
-    // Calculate conversion rates
-    final totalViews = jobsResponse.fold<int>(
-      0,
-      (sum, job) =>
-          sum +
-          (applicationsResponse
-                  .where((app) => app['job_id'] == job['id'])
-                  .length *
-              3), // Mock data
-    );
-    final totalApplications = applicationsResponse.length;
-    final overallConversionRate = totalViews > 0
-        ? (totalApplications / totalViews) * 100.0
-        : 0.0;
-
-    final Map<String, double> conversionRates = {
-      'overall': overallConversionRate,
-      'this_month': overallConversionRate * 1.2, // Mock data
-      'last_month': overallConversionRate * 0.8, // Mock data
+    return {
+      'totalJobs': jobsResponse.length,
+      'activeJobs': activeJobs,
+      'totalApplications': totalApplications,
+      'recentJobs': recentJobs,
+      'applicationTrends': applicationTrends,
+      'statusCounts': statusCounts,
     };
-
-    // Calculate average time to fill (mock data for now)
-    final averageTimeToFill = 25.5; // days
-
-    return RecruiterAnalytics(
-      applicationStatusCounts: statusCounts,
-      weeklyTrends: weeklyTrends,
-      topPerformingJobs: topPerformingJobs.take(5).toList(), // Top 5
-      conversionRates: conversionRates,
-      averageTimeToFill: averageTimeToFill,
-      totalViews: totalViews,
-      totalApplications: totalApplications,
-      totalJobs: jobsResponse.length,
-    );
   } catch (e) {
     throw Exception('Failed to fetch analytics: $e');
   }

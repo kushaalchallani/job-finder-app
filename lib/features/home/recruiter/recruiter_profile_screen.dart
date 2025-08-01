@@ -32,13 +32,20 @@ class _RecruiterProfileScreenState
 
   File? _profileImage;
   String? _currentProfileImageUrl;
+  File? _companyProfileImage;
+  String? _currentCompanyProfileImageUrl;
   bool _isLoading = false;
   bool _isImageLoading = false;
+  bool _isCompanyImageLoading = false;
   bool _isDataLoaded = false;
 
   @override
   void initState() {
     super.initState();
+    // Refresh all profile providers when the page is first loaded
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.invalidate(userProfileProvider);
+    });
   }
 
   @override
@@ -85,6 +92,39 @@ class _RecruiterProfileScreenState
     }
   }
 
+  Future<void> _pickCompanyImage() async {
+    setState(() {
+      _isCompanyImageLoading = true;
+    });
+
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 512,
+        maxHeight: 512,
+        imageQuality: 80,
+      );
+
+      if (image != null) {
+        setState(() {
+          _companyProfileImage = File(image.path);
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error picking company image: $e'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    } finally {
+      setState(() {
+        _isCompanyImageLoading = false;
+      });
+    }
+  }
+
   Future<String?> _uploadProfileImage() async {
     if (_profileImage == null) return _currentProfileImageUrl;
 
@@ -112,6 +152,33 @@ class _RecruiterProfileScreenState
     }
   }
 
+  Future<String?> _uploadCompanyImage() async {
+    if (_companyProfileImage == null) return _currentCompanyProfileImageUrl;
+
+    try {
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      if (userId == null) throw Exception('User not authenticated');
+
+      final fileName =
+          'company_${userId}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final filePath = 'company-images/$fileName';
+
+      // Upload the image
+      await Supabase.instance.client.storage
+          .from('profiles')
+          .upload(filePath, _companyProfileImage!);
+
+      // Get the public URL
+      final imageUrl = Supabase.instance.client.storage
+          .from('profiles')
+          .getPublicUrl(filePath);
+
+      return imageUrl;
+    } catch (e) {
+      throw Exception('Failed to upload company image: $e');
+    }
+  }
+
   Future<void> _saveProfile() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -125,6 +192,7 @@ class _RecruiterProfileScreenState
 
       // Upload profile image if changed
       String? profileImageUrl = await _uploadProfileImage();
+      String? companyImageUrl = await _uploadCompanyImage();
 
       // Update profile in database
       await Supabase.instance.client
@@ -137,6 +205,7 @@ class _RecruiterProfileScreenState
             'location': _locationController.text.trim(),
             'bio': _bioController.text.trim(),
             if (profileImageUrl != null) 'profile_image_url': profileImageUrl,
+            if (companyImageUrl != null) 'company_image_url': companyImageUrl,
             'updated_at': DateTime.now().toIso8601String(),
           })
           .eq('id', userId);
@@ -189,9 +258,12 @@ class _RecruiterProfileScreenState
           _locationController.text = userProfile.location ?? '';
           _bioController.text = userProfile.bio ?? '';
           _currentProfileImageUrl = userProfile.profileImageUrl;
+          _currentCompanyProfileImageUrl = userProfile.companyImageUrl;
           _isDataLoaded = true;
           _profileImage =
               null; // Discard unsaved profile image changes on refresh
+          _companyProfileImage =
+              null; // Discard unsaved company image changes on refresh
           // Unfocus all text fields after refresh
           FocusScope.of(context).unfocus();
         }
@@ -262,6 +334,11 @@ class _RecruiterProfileScreenState
                         CompanyInfoSection(
                           companyNameController: _companyNameController,
                           positionController: _positionController,
+                          companyProfileImage: _companyProfileImage,
+                          currentCompanyProfileImageUrl:
+                              _currentCompanyProfileImageUrl,
+                          isCompanyImageLoading: _isCompanyImageLoading,
+                          onPickCompanyImage: _pickCompanyImage,
                         ),
                         BioSection(bioController: _bioController),
                         const SizedBox(height: 32),

@@ -2,11 +2,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:job_finder_app/models/job_application.dart';
 import 'package:job_finder_app/features/home/job_seeker/services/application_service.dart';
+import 'package:job_finder_app/core/providers/auth_provider.dart';
 
 // Provider for user's applications
 final userApplicationsProvider = FutureProvider<List<JobApplication>>((
   ref,
 ) async {
+  // Watch auth state to refresh when user changes
+  ref.watch(authStateProvider);
+
   final user = Supabase.instance.client.auth.currentUser;
   if (user == null) throw Exception('User not authenticated');
 
@@ -15,6 +19,9 @@ final userApplicationsProvider = FutureProvider<List<JobApplication>>((
 
 // Provider for application statistics
 final applicationStatsProvider = FutureProvider<Map<String, int>>((ref) async {
+  // Watch auth state to refresh when user changes
+  ref.watch(authStateProvider);
+
   final user = Supabase.instance.client.auth.currentUser;
   if (user == null) throw Exception('User not authenticated');
 
@@ -26,6 +33,9 @@ final hasAppliedProvider = FutureProvider.family<bool, String>((
   ref,
   jobId,
 ) async {
+  // Watch auth state to refresh when user changes
+  ref.watch(authStateProvider);
+
   final user = Supabase.instance.client.auth.currentUser;
   if (user == null) return false;
 

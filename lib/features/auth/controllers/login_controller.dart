@@ -29,12 +29,11 @@ class LoginState {
 }
 
 class LoginController extends StateNotifier<LoginState> {
-  LoginController() : super(const LoginState()) {
-    // print('LoginController created');
-  }
+  LoginController() : super(const LoginState());
+
   @override
+  // ignore: unnecessary_overrides
   void dispose() {
-    // print('LoginController disposed');
     super.dispose();
   }
 
@@ -77,7 +76,6 @@ class LoginController extends StateNotifier<LoginState> {
         context?.go('/home');
       }
     } catch (e) {
-      debugPrint('Failed to fetch user role: $e');
       navigatorKey.currentContext?.go('/home');
     }
 
@@ -91,16 +89,13 @@ class LoginController extends StateNotifier<LoginState> {
     required BuildContext context,
   }) async {
     state = state.copyWith(isSocialLoading: true, error: null);
-    
+
     try {
-      await AuthService.signInWithSocial(
-        provider: provider,
-        context: context,
-      );
-      
+      await AuthService.signInWithSocial(provider: provider, context: context);
+
       // 🔧 REMOVED: All validation logic moved to DeepLinkHandler
       // The deep link handler will handle the OAuth callback and show appropriate messages
-      
+
       state = state.copyWith(isSocialLoading: false);
       return true;
     } catch (e) {

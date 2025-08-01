@@ -2,6 +2,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:job_finder_app/models/job_opening.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'; // Import your existing JobOpening model
+import 'package:job_finder_app/core/providers/auth_provider.dart';
 
 // Provider to fetch active job openings
 final jobListProvider = FutureProvider<List<JobOpening>>((ref) async {
@@ -10,11 +11,21 @@ final jobListProvider = FutureProvider<List<JobOpening>>((ref) async {
   try {
     final response = await supabase
         .from('job_openings')
-        .select()
+        .select('''
+          *,
+          profiles!job_openings_recruiter_id_fkey(company_image_url)
+        ''')
         .eq('status', 'active')
         .order('created_at', ascending: false);
 
-    return response.map((job) => JobOpening.fromJson(job)).toList();
+    return response.map((job) {
+      // Extract company image URL
+      final recruiterProfile = job['profiles'] as Map<String, dynamic>?;
+      final companyPictureUrl = recruiterProfile?['company_image_url'];
+
+      final jobWithPicture = {...job, 'company_picture_url': companyPictureUrl};
+      return JobOpening.fromJson(jobWithPicture);
+    }).toList();
   } catch (e) {
     throw Exception('Failed to fetch jobs: $e');
   }
@@ -72,7 +83,8 @@ final popularJobsProvider = FutureProvider<List<JobOpening>>((ref) async {
         .select('''
           *,
           job_applications!job_id(count),
-          job_views!job_id(count)
+          job_views!job_id(count),
+          profiles!job_openings_recruiter_id_fkey(company_image_url)
         ''')
         .eq('status', 'active')
         .order('created_at', ascending: false);
@@ -165,10 +177,15 @@ final popularJobsProvider = FutureProvider<List<JobOpening>>((ref) async {
       final applicationCount = applications is List ? applications.length : 0;
       final viewCount = views is List ? views.length : 0;
 
+      // Extract recruiter profile picture URL
+      final recruiterProfile = job['profiles'] as Map<String, dynamic>?;
+      final companyPictureUrl = recruiterProfile?['company_image_url'];
+
       final jobWithCounts = {
         ...job,
         'application_count': applicationCount,
         'view_count': viewCount,
+        'company_picture_url': companyPictureUrl,
       };
       return JobOpening.fromJson(jobWithCounts);
     }).toList();
@@ -176,14 +193,26 @@ final popularJobsProvider = FutureProvider<List<JobOpening>>((ref) async {
     // Fallback: just get recent active jobs
     final response = await supabase
         .from('job_openings')
-        .select()
+        .select('''
+          *,
+          profiles!job_openings_recruiter_id_fkey(company_image_url)
+        ''')
         .eq('status', 'active')
         .order('created_at', ascending: false)
         .limit(6);
 
     return response.map((job) {
+      // Extract company image URL
+      final recruiterProfile = job['profiles'] as Map<String, dynamic>?;
+      final companyPictureUrl = recruiterProfile?['company_image_url'];
+
       // Add default counts for fallback
-      final jobWithCounts = {...job, 'application_count': 0, 'view_count': 0};
+      final jobWithCounts = {
+        ...job,
+        'application_count': 0,
+        'view_count': 0,
+        'company_picture_url': companyPictureUrl,
+      };
       return JobOpening.fromJson(jobWithCounts);
     }).toList();
   }
@@ -256,10 +285,13 @@ final testProvider = FutureProvider<String>((ref) async {
 final recentApplicationsProvider = FutureProvider<List<Map<String, dynamic>>>((
   ref,
 ) async {
+  // Watch auth state to refresh when user changes
+  ref.watch(authStateProvider);
+
   final supabase = Supabase.instance.client;
 
   try {
-    // Get recent job openings created by recruiters
+    // Get recent job openings created by recruiters with company logos
     final jobs = await supabase
         .from('job_openings')
         .select('''
@@ -269,13 +301,20 @@ final recentApplicationsProvider = FutureProvider<List<Map<String, dynamic>>>((
           location,
           job_type,
           salary_range,
-          created_at
+          created_at,
+          profiles!job_openings_recruiter_id_fkey(company_image_url)
         ''')
         .eq('status', 'active')
         .order('created_at', ascending: false)
         .limit(3); // Limit to 3 most recent
 
-    return jobs;
+    return jobs.map((job) {
+      // Extract company image URL
+      final recruiterProfile = job['profiles'] as Map<String, dynamic>?;
+      final companyPictureUrl = recruiterProfile?['company_image_url'];
+
+      return {...job, 'company_picture_url': companyPictureUrl};
+    }).toList();
   } catch (e) {
     return [];
   }
@@ -319,6 +358,9 @@ final jobViewCountProvider = FutureProvider.family<int, String>((
 
 // Provider for saved jobs
 final savedJobsProvider = FutureProvider<List<JobOpening>>((ref) async {
+  // Watch auth state to refresh when user changes
+  ref.watch(authStateProvider);
+
   final supabase = Supabase.instance.client;
   final user = supabase.auth.currentUser;
 
@@ -328,14 +370,27 @@ final savedJobsProvider = FutureProvider<List<JobOpening>>((ref) async {
     final response = await supabase
         .from('saved_jobs')
         .select('''
-          job_openings!inner(*)
+          job_openings!inner(
+            *,
+            profiles!job_openings_recruiter_id_fkey(company_image_url)
+          )
         ''')
         .eq('user_id', user.id)
         .order('created_at', ascending: false);
 
-    return response
-        .map((savedJob) => JobOpening.fromJson(savedJob['job_openings']))
-        .toList();
+    return response.map((savedJob) {
+      final jobData = savedJob['job_openings'] as Map<String, dynamic>;
+
+      // Extract company image URL
+      final recruiterProfile = jobData['profiles'] as Map<String, dynamic>?;
+      final companyPictureUrl = recruiterProfile?['company_image_url'];
+
+      final jobWithPicture = {
+        ...jobData,
+        'company_picture_url': companyPictureUrl,
+      };
+      return JobOpening.fromJson(jobWithPicture);
+    }).toList();
   } catch (e) {
     throw Exception('Failed to fetch saved jobs: $e');
   }
@@ -473,14 +528,27 @@ class SavedJobsNotifier extends StateNotifier<AsyncValue<List<JobOpening>>> {
     final response = await supabase
         .from('saved_jobs')
         .select('''
-          job_openings!inner(*)
+          job_openings!inner(
+            *,
+            profiles!job_openings_recruiter_id_fkey(company_image_url)
+          )
         ''')
         .eq('user_id', user.id)
         .order('created_at', ascending: false);
 
-    return response
-        .map((savedJob) => JobOpening.fromJson(savedJob['job_openings']))
-        .toList();
+    return response.map((savedJob) {
+      final jobData = savedJob['job_openings'] as Map<String, dynamic>;
+
+      // Extract company image URL
+      final recruiterProfile = jobData['profiles'] as Map<String, dynamic>?;
+      final companyPictureUrl = recruiterProfile?['company_image_url'];
+
+      final jobWithPicture = {
+        ...jobData,
+        'company_picture_url': companyPictureUrl,
+      };
+      return JobOpening.fromJson(jobWithPicture);
+    }).toList();
   }
 
   Future<bool> toggleSavedJob(String jobId, WidgetRef? ref) async {

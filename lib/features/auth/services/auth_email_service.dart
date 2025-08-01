@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:job_finder_app/core/utils/error_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -45,7 +44,6 @@ class AuthEmailService {
       await _client.auth.signOut();
       return true;
     } catch (e) {
-      debugPrint("Signup error: $e");
       return false;
     }
   }

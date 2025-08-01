@@ -8,6 +8,7 @@ import 'package:job_finder_app/core/widgets/button.dart';
 import 'package:job_finder_app/core/providers/profile_provider.dart';
 import 'package:job_finder_app/features/home/recruiter/widgets/job/job_form_sections.dart';
 import 'package:job_finder_app/features/home/recruiter/widgets/job/job_creation_helpers.dart';
+import 'package:job_finder_app/core/providers/recruiter_jobs_provider.dart';
 
 class CreateJobScreen extends ConsumerStatefulWidget {
   const CreateJobScreen({Key? key}) : super(key: key);
@@ -104,8 +105,16 @@ class _CreateJobScreenState extends ConsumerState<CreateJobScreen> {
                     setState(() => _selectedJobType = value),
                 onExperienceLevelChanged: (value) =>
                     setState(() => _selectedExperienceLevel = value),
-                onStatusChanged: (value) =>
-                    setState(() => _selectedStatus = value),
+                onStatusChanged: (value) {
+                  setState(() {
+                    _selectedStatus = value;
+                    // Clear errors when switching to draft mode
+                    if (value == 'paused') {
+                      _requirementsError = null;
+                      _benefitsError = null;
+                    }
+                  });
+                },
               ),
               const SizedBox(height: 20),
 
@@ -149,7 +158,7 @@ class _CreateJobScreenState extends ConsumerState<CreateJobScreen> {
     return SizedBox(
       width: double.infinity,
       child: PrimaryButton(
-        text: 'Create Job',
+        text: _selectedStatus == 'active' ? 'Publish Job' : 'Save Draft',
         onPressed: () {
           // Clear previous error messages
           setState(() {
@@ -157,50 +166,59 @@ class _CreateJobScreenState extends ConsumerState<CreateJobScreen> {
             _benefitsError = null;
           });
 
-          if (_formKey.currentState!.validate()) {
-            // Additional validation for requirements and benefits when publishing
-            if (_selectedStatus == 'active' && _requirements.isEmpty) {
-              setState(() {
-                _requirementsError =
-                    'Please add at least one requirement for the job';
-              });
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                    'Please add at least one requirement for the job',
-                  ),
-                  backgroundColor: Colors.orange,
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-              return;
-            }
+          // For drafts, allow saving even with empty fields
+          if (_selectedStatus == 'paused') {
+            _createJob(status: 'paused');
+            return;
+          }
 
-            if (_selectedStatus == 'active' && _benefits.isEmpty) {
-              setState(() {
-                _benefitsError = 'Please add at least one benefit for the job';
-              });
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Please add at least one benefit for the job'),
-                  backgroundColor: Colors.orange,
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-              return;
-            }
-
-            _createJob(status: _selectedStatus);
-          } else {
-            // Show a snackbar to inform user about validation errors
+          // For active jobs, validate all required fields
+          if (!_formKey.currentState!.validate()) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Please fill in all required fields correctly'),
+                content: Text(
+                  'Please fill in all required fields to publish the job',
+                ),
                 backgroundColor: Colors.orange,
                 behavior: SnackBarBehavior.floating,
               ),
             );
+            return;
           }
+
+          // Additional validation for requirements and benefits when publishing
+          if (_selectedStatus == 'active' && _requirements.isEmpty) {
+            setState(() {
+              _requirementsError =
+                  'Please add at least one requirement for the job';
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Please add at least one requirement for the job',
+                ),
+                backgroundColor: Colors.orange,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+            return;
+          }
+
+          if (_selectedStatus == 'active' && _benefits.isEmpty) {
+            setState(() {
+              _benefitsError = 'Please add at least one benefit for the job';
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Please add at least one benefit for the job'),
+                backgroundColor: Colors.orange,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+            return;
+          }
+
+          _createJob(status: _selectedStatus);
         },
         isLoading: _isLoading,
       ),
@@ -223,6 +241,8 @@ class _CreateJobScreenState extends ConsumerState<CreateJobScreen> {
       // Set error if no requirements left and job is active
       if (_requirements.isEmpty && _selectedStatus == 'active') {
         _requirementsError = 'Please add at least one requirement for the job';
+      } else {
+        _requirementsError = null; // Clear error for drafts
       }
     });
   }
@@ -243,73 +263,65 @@ class _CreateJobScreenState extends ConsumerState<CreateJobScreen> {
       // Set error if no benefits left and job is active
       if (_benefits.isEmpty && _selectedStatus == 'active') {
         _benefitsError = 'Please add at least one benefit for the job';
+      } else {
+        _benefitsError = null; // Clear error for drafts
       }
     });
   }
 
   void _saveDraft() async {
-    // For drafts, we'll allow saving even with validation errors, but warn the user
-    if (_titleController.text.trim().isEmpty ||
-        _companyController.text.trim().isEmpty ||
-        _locationController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Draft saved, but please fill in required fields for a complete job posting',
-          ),
-          backgroundColor: Colors.orange,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    }
+    // For drafts, allow saving with any field values
     await _createJob(status: 'paused');
   }
 
   Future<void> _createJob({required String status}) async {
-    final jobData = JobCreationData(
-      title: _titleController.text.trim(),
-      companyName: _companyController.text.trim(),
-      location: _locationController.text.trim(),
-      jobType: _selectedJobType,
-      experienceLevel: _selectedExperienceLevel,
-      description: _descriptionController.text.trim(),
-      salaryRange: _salaryRangeController.text.trim().isEmpty
-          ? null
-          : _salaryRangeController.text.trim(),
-      requirements: _requirements,
-      benefits: _benefits,
-      status: status,
-    );
+    setState(() => _isLoading = true);
 
-    await createJob(
-      jobData: jobData,
-      onSuccess: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              status == 'paused'
-                  ? 'Job saved as draft!'
-                  : 'Job created successfully!',
-            ),
-            backgroundColor: const Color(0xFF50C878),
-            behavior: SnackBarBehavior.floating,
+    try {
+      final jobData = JobCreationData(
+        title: _titleController.text.trim(),
+        companyName: _companyController.text.trim(),
+        location: _locationController.text.trim(),
+        jobType: _selectedJobType,
+        experienceLevel: _selectedExperienceLevel,
+        description: _descriptionController.text.trim(),
+        salaryRange: _salaryRangeController.text.trim().isEmpty
+            ? null
+            : _salaryRangeController.text.trim(),
+        requirements: _requirements,
+        benefits: _benefits,
+        status: status,
+      );
+
+      await createJob(jobData: jobData);
+
+      // Invalidate the recruiter jobs provider to refresh the jobs list
+      ref.invalidate(recruiterJobsProvider);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            status == 'paused'
+                ? 'Job saved as draft!'
+                : 'Job created successfully!',
           ),
-        );
-        _clearForm();
-        context.pop();
-      },
-      onError: (error) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error creating job: $error'),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      },
-      onLoading: () => setState(() => _isLoading = true),
-      onLoadingComplete: () => setState(() => _isLoading = false),
-    );
+          backgroundColor: const Color(0xFF50C878),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      _clearForm();
+      context.pop();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error creating job: $e'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
   void _clearForm() {

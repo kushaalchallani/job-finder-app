@@ -12,6 +12,7 @@ class UserProfile {
   final String? linkedin;
   final String? github;
   final String? profileImageUrl;
+  final String? companyImageUrl;
   final String signUpMethod;
   final String? position;
 
@@ -28,6 +29,7 @@ class UserProfile {
     this.linkedin,
     this.github,
     this.profileImageUrl,
+    this.companyImageUrl,
     required this.signUpMethod,
     this.position,
   });
@@ -46,6 +48,7 @@ class UserProfile {
       linkedin: json['linkedin'],
       github: json['github'],
       profileImageUrl: json['profile_image_url'],
+      companyImageUrl: json['company_image_url'],
       signUpMethod: json['sign_up_method'],
       position: json['position'],
     );
@@ -61,6 +64,7 @@ class UserProfile {
       'linkedin': linkedin,
       'github': github,
       'profile_image_url': profileImageUrl,
+      'company_image_url': companyImageUrl,
       'position': position,
     };
   }

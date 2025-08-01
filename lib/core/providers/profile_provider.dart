@@ -2,9 +2,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:job_finder_app/models/user_profile.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:job_finder_app/core/providers/auth_provider.dart';
 
 // User Profile Provider
 final userProfileProvider = FutureProvider<UserProfile?>((ref) async {
+  // Watch auth state to refresh when user changes
+  ref.watch(authStateProvider);
+  
   final supabase = Supabase.instance.client;
   final user = supabase.auth.currentUser;
 
@@ -34,6 +38,9 @@ final userProfileProvider = FutureProvider<UserProfile?>((ref) async {
 final userExperiencesProvider = FutureProvider<List<UserExperience>>((
   ref,
 ) async {
+  // Watch auth state to refresh when user changes
+  ref.watch(authStateProvider);
+  
   final supabase = Supabase.instance.client;
   final user = supabase.auth.currentUser;
 
@@ -55,6 +62,9 @@ final userExperiencesProvider = FutureProvider<List<UserExperience>>((
 
 // User Skills Provider
 final userSkillsProvider = FutureProvider<List<UserSkill>>((ref) async {
+  // Watch auth state to refresh when user changes
+  ref.watch(authStateProvider);
+  
   final supabase = Supabase.instance.client;
   final user = supabase.auth.currentUser;
 
@@ -76,6 +86,9 @@ final userSkillsProvider = FutureProvider<List<UserSkill>>((ref) async {
 
 // User Resumes Provider
 final userResumesProvider = FutureProvider<List<UserResume>>((ref) async {
+  // Watch auth state to refresh when user changes
+  ref.watch(authStateProvider);
+  
   final supabase = Supabase.instance.client;
   final user = supabase.auth.currentUser;
 
@@ -146,6 +159,9 @@ final profileCompletionProvider = Provider<double>((ref) {
 
 // User Education Provider
 final userEducationProvider = FutureProvider<List<UserEducation>>((ref) async {
+  // Watch auth state to refresh when user changes
+  ref.watch(authStateProvider);
+  
   final supabase = Supabase.instance.client;
   final user = supabase.auth.currentUser;
 

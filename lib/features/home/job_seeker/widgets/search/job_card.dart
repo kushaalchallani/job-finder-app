@@ -25,105 +25,133 @@ class JobCard extends ConsumerWidget {
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () => context.push('/job-details/${job.id}'),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Text(
-                    job.companyName,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppColors.grey600,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
+                    // Company Logo
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
+                      width: 40,
+                      height: 40,
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
+                        color: AppColors.grey200,
+                        borderRadius: BorderRadius.circular(8),
                       ),
+                      child:
+                          job.companyPictureUrl != null &&
+                              job.companyPictureUrl!.isNotEmpty
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.network(
+                                job.companyPictureUrl!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Icon(
+                                      Icons.business,
+                                      color: AppColors.grey600,
+                                    ),
+                              ),
+                            )
+                          : Icon(Icons.business, color: AppColors.grey600),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
                       child: Text(
-                        job.jobType.toUpperCase(),
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w600,
+                        job.companyName,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppColors.grey600,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    Consumer(
-                      builder: (context, ref, child) {
-                        final isSavedAsync = ref.watch(
-                          isJobSavedProvider(job.id),
-                        );
-
-                        return isSavedAsync.when(
-                          data: (isSaved) => GestureDetector(
-                            onTap: () async {
-                              final success = await ref
-                                  .read(savedJobsNotifierProvider.notifier)
-                                  .toggleSavedJob(job.id, ref);
-
-                              if (success && context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      isSaved
-                                          ? 'Job removed from saved'
-                                          : 'Job saved!',
-                                    ),
-                                    duration: const Duration(seconds: 2),
-                                  ),
-                                );
-                              }
-                            },
-                            child: Icon(
-                              isSaved ? Icons.bookmark : Icons.bookmark_outline,
-                              color: isSaved
-                                  ? AppColors.primary
-                                  : AppColors.grey400,
-                              size: 24,
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            job.jobType.toUpperCase(),
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
-                          loading: () => Icon(
-                            Icons.bookmark_outline,
-                            color: AppColors.grey400,
-                            size: 24,
-                          ),
-                          error: (_, __) => Icon(
-                            Icons.bookmark_outline,
-                            color: AppColors.grey400,
-                            size: 24,
-                          ),
-                        );
-                      },
+                        ),
+                        const SizedBox(width: 8),
+                        Consumer(
+                          builder: (context, ref, child) {
+                            final isSavedAsync = ref.watch(
+                              isJobSavedProvider(job.id),
+                            );
+
+                            return isSavedAsync.when(
+                              data: (isSaved) => GestureDetector(
+                                onTap: () async {
+                                  final success = await ref
+                                      .read(savedJobsNotifierProvider.notifier)
+                                      .toggleSavedJob(job.id, ref);
+
+                                  if (success && context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          isSaved
+                                              ? 'Job removed from saved'
+                                              : 'Job saved!',
+                                        ),
+                                        duration: const Duration(seconds: 2),
+                                      ),
+                                    );
+                                  }
+                                },
+                                child: Icon(
+                                  isSaved
+                                      ? Icons.bookmark
+                                      : Icons.bookmark_outline,
+                                  color: isSaved
+                                      ? AppColors.primary
+                                      : AppColors.grey400,
+                                  size: 24,
+                                ),
+                              ),
+                              loading: () => Icon(
+                                Icons.bookmark_outline,
+                                color: AppColors.grey400,
+                                size: 24,
+                              ),
+                              error: (_, __) => Icon(
+                                Icons.bookmark_outline,
+                                color: AppColors.grey400,
+                                size: 24,
+                              ),
+                            );
+                          },
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-            const SizedBox(height: 8),
+                const SizedBox(height: 8),
 
-            // Make the main content clickable for navigation
-            InkWell(
-              borderRadius: BorderRadius.circular(8),
-              onTap: () => context.push('/job-details/${job.id}'),
-              child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: Column(
+                // Main content area
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
@@ -213,9 +241,9 @@ class JobCard extends ConsumerWidget {
                     ),
                   ],
                 ),
-              ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

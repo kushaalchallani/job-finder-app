@@ -24,19 +24,46 @@ class CompanyInfoCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Company Logo Placeholder
+          // Company Logo
           Container(
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              color: AppColors.brandGreen,
+              color: AppColors.grey200,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(
-              Icons.business,
-              color: AppColors.onPrimary,
-              size: 28,
-            ),
+            child:
+                job.companyPictureUrl != null &&
+                    job.companyPictureUrl!.isNotEmpty
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(
+                      job.companyPictureUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.brandGreen,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.business,
+                          color: AppColors.onPrimary,
+                          size: 28,
+                        ),
+                      ),
+                    ),
+                  )
+                : Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.brandGreen,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.business,
+                      color: AppColors.onPrimary,
+                      size: 28,
+                    ),
+                  ),
           ),
           const SizedBox(width: 16),
 

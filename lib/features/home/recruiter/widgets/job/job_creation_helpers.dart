@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:job_finder_app/models/job_opening.dart';
 
 class JobCreationData {
   final String title;
@@ -27,51 +28,70 @@ class JobCreationData {
   });
 }
 
-Future<void> createJob({
-  required JobCreationData jobData,
-  required VoidCallback onSuccess,
-  required Function(String) onError,
-  required VoidCallback onLoading,
-  required VoidCallback onLoadingComplete,
-}) async {
-  onLoading();
+Future<JobOpening> createJob({required JobCreationData jobData}) async {
+  final user = Supabase.instance.client.auth.currentUser;
+  if (user == null) {
+    throw Exception('User not authenticated');
+  }
+
+  // Validate required fields only for active jobs
+  if (jobData.status == 'active') {
+    if (jobData.title.trim().isEmpty) {
+      throw Exception('Job title is required');
+    }
+    if (jobData.companyName.trim().isEmpty) {
+      throw Exception('Company name is required');
+    }
+    if (jobData.location.trim().isEmpty) {
+      throw Exception('Location is required');
+    }
+    if (jobData.description.trim().isEmpty) {
+      throw Exception('Job description is required');
+    }
+  }
+
+  final data = {
+    'recruiter_id': user.id,
+    'title': jobData.title.trim().isEmpty ? 'Draft Job' : jobData.title.trim(),
+    'company_name': jobData.companyName.trim().isEmpty
+        ? 'Draft Company'
+        : jobData.companyName.trim(),
+    'location': jobData.location.trim().isEmpty
+        ? 'Draft Location'
+        : jobData.location.trim(),
+    'job_type': jobData.jobType,
+    'experience_level': jobData.experienceLevel,
+    'description': jobData.description.trim().isEmpty
+        ? 'Draft description'
+        : jobData.description.trim(),
+    'salary_range': jobData.salaryRange?.trim().isEmpty == true
+        ? null
+        : jobData.salaryRange?.trim(),
+    'requirements': jobData.requirements,
+    'benefits': jobData.benefits,
+    'status': jobData.status,
+  };
 
   try {
-    final supabase = Supabase.instance.client;
-    final user = supabase.auth.currentUser;
+    final response = await Supabase.instance.client
+        .from('job_openings')
+        .insert(data)
+        .select()
+        .single();
 
-    if (user == null) {
-      throw Exception('User not authenticated');
-    }
-
-    final data = {
-      'recruiter_id': user.id,
-      'title': jobData.title,
-      'company_name': jobData.companyName,
-      'location': jobData.location,
-      'job_type': jobData.jobType,
-      'experience_level': jobData.experienceLevel,
-      'description': jobData.description,
-      'salary_range': jobData.salaryRange,
-      'requirements': jobData.requirements,
-      'benefits': jobData.benefits,
-      'status': jobData.status,
-    };
-
-    await supabase.from('job_openings').insert(data);
-    onSuccess();
+    return JobOpening.fromJson(response);
   } catch (e) {
-    // Handle the notifications table error gracefully
-    if (e.toString().contains('notifications') &&
-        (e.toString().contains('type') || e.toString().contains('job_id'))) {
-      // Job was created successfully, but notification creation failed
-      // This is a temporary fix until we set up the notifications table properly
-      onSuccess();
-    } else {
-      onError(e.toString());
+    // If the regular insert fails due to trigger issues, try RPC
+    try {
+      final response = await Supabase.instance.client.rpc(
+        'insert_job_without_triggers',
+        params: data,
+      );
+
+      return JobOpening.fromJson(response);
+    } catch (rpcError) {
+      throw Exception('Failed to create job: $rpcError');
     }
-  } finally {
-    onLoadingComplete();
   }
 }
 

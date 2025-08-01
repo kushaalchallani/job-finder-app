@@ -13,12 +13,24 @@ final jobDetailsProvider = FutureProvider.family<JobOpening?, String>((
   try {
     final response = await supabase
         .from('job_openings')
-        .select()
+        .select('''
+          *,
+          profiles!job_openings_recruiter_id_fkey(company_image_url)
+        ''')
         .eq('id', jobId)
         .eq('status', 'active')
         .single();
 
-    final job = JobOpening.fromJson(response);
+    // Extract company image URL
+    final recruiterProfile = response['profiles'] as Map<String, dynamic>?;
+    final companyPictureUrl = recruiterProfile?['company_image_url'];
+
+    final jobWithPicture = {
+      ...response,
+      'company_picture_url': companyPictureUrl,
+    };
+
+    final job = JobOpening.fromJson(jobWithPicture);
 
     // Track the job view automatically when job is fetched
     trackJobView(jobId);

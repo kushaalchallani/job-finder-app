@@ -1,11 +1,6 @@
-import 'package:flutter/material.dart';
-
 class ErrorHandler {
   static String getUserFriendlyError(String error) {
     final lowerError = error.toLowerCase();
-
-    debugPrint('DEBUG - Original error: $error');
-    debugPrint('DEBUG - Lowercase error: $lowerError');
 
     // Email-related errors
     if (lowerError.contains('invalid email') ||

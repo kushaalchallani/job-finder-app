@@ -18,6 +18,19 @@ class ProfileScreen extends ConsumerStatefulWidget {
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
+  void initState() {
+    super.initState();
+    // Refresh all profile providers when the page is first loaded
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.invalidate(userProfileProvider);
+      ref.invalidate(userExperiencesProvider);
+      ref.invalidate(userSkillsProvider);
+      ref.invalidate(userResumesProvider);
+      ref.invalidate(userEducationProvider);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final profileAsync = ref.watch(userProfileProvider);
     final experiencesAsync = ref.watch(userExperiencesProvider);

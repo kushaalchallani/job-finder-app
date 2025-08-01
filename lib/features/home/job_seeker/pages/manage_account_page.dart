@@ -194,7 +194,7 @@ class _ManageAccountPageState extends ConsumerState<ManageAccountPage> {
             if (context.canPop()) {
               context.pop();
             } else {
-              context.go('/job-seeker/settings');
+              context.go('/seeker-settings');
             }
           },
         ),
